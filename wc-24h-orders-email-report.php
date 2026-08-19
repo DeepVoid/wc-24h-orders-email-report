@@ -1,10 +1,10 @@
 <?php
 /**
  * Plugin Name: WooCommerce 24h Orders Email Report
- * Plugin URI: https://github.com/DeepVoid/
- * Text Domain: 
+ * Plugin URI: https://github.com/DeepVoid/wc-24h-orders-email-report
+ * Text Domain: woocommerce-24h-orders-email-report
  * Description: Invia automaticamente via email il report degli ordini ricevuti nelle ultime 24 ore, con destinatari e orario configurabili.
- * Version: 1.1.0
+ * Version: 1.1.1
  * Author: Alex Vannini - DeepVoid
  * Requires at least: 6.5
  * Requires PHP: 7.4
@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class CB_WC_24H_Orders_Email_Report {
 
-	const VERSION    = '1.1.0';
+	const VERSION    = '1.1.1';
 	const AS_GROUP   = 'cb-wc-24h-report';
 	const OPTION_KEY = 'cb_wc_24h_report_settings';
 	const CRON_HOOK  = 'cb_wc_24h_report_send';
@@ -143,7 +143,7 @@ final class CB_WC_24H_Orders_Email_Report {
 						<th scope="row"><label for="cb-recipients">Destinatari email</label></th>
 						<td>
 							<textarea id="cb-recipients" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[recipients]" rows="6" cols="60" class="large-text code"><?php echo esc_textarea( $settings['recipients'] ); ?></textarea>
-							<p class="description">Un indirizzo per riga. Sono accettati anche indirizzi separati da virgola o punto e virgola.</p>
+							<p class="description">Un indirizzo per riga, oppure indirizzi separati da virgola o punto e virgola.</p>
 						</td>
 					</tr>
 					<tr>
@@ -393,10 +393,10 @@ final class CB_WC_24H_Orders_Email_Report {
 		}
 
 		$subject = sprintf(
-			'[%s] Report ordini ultime 24 ore – %d ordine%s',
+			'[%s] Report ordini ultime 24 ore – %d ordin%s',
 			wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
 			count( $orders ),
-			1 === count( $orders ) ? '' : 'i'
+			1 === count( $orders ) ? 'e' : 'i'
 		);
 
 		$body = self::build_email( $orders, $settings, $from, $now, $test );
@@ -442,11 +442,11 @@ final class CB_WC_24H_Orders_Email_Report {
 			<title><?php echo esc_html( $site_name ); ?> – Report ordini</title>
 		</head>
 		<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;color:#222;">
-			<div style="max-width:1000px;margin:0 auto;padding:24px;">
-				<div style="background:#fff;padding:24px;border:1px solid #ddd;">
-					<h1 style="margin:0 0 8px;font-size:24px;"><?php echo esc_html( $site_name ); ?> – Report ordini</h1>
+			<div style="max-width:1000px;margin:0 auto;padding:0px;">
+				<div style="background:#fff;padding:24px;border:0px;">
+					<h2 style="margin:0 0 8px;font-size:14px;"><?php echo esc_html( $site_name ); ?> – Report ordini</h2>
 					<p style="margin:0 0 24px;color:#666;">
-						Periodo: <?php echo esc_html( $from_text ); ?> – <?php echo esc_html( $to_text ); ?>
+						Periodo: dal <?php echo esc_html( $from_text ); ?> al <?php echo esc_html( $to_text ); ?>
 						<?php if ( $test ) : ?>
 							<br><strong>EMAIL DI TEST</strong>
 						<?php endif; ?>
@@ -474,37 +474,35 @@ final class CB_WC_24H_Orders_Email_Report {
 							?>
 							<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 24px;border:1px solid #ddd;">
 								<tr>
-									<td colspan="2" style="background:#222;color:#fff;padding:12px 14px;font-size:17px;font-weight:bold;">
+									<td colspan="2" style="background:#222;color:#fff;padding:0px 10px;font-size:14px;font-weight:bold;">
 										<?php if ( 'yes' === $settings['include_order_link'] && current_user_can( 'manage_woocommerce' ) ) : ?>
 											<a href="<?php echo esc_url( $order->get_edit_order_url() ); ?>" style="color:#fff;text-decoration:none;">
-												ORDINE #<?php echo esc_html( $order_number ); ?>
+												ORDINE N. <?php echo esc_html( $order_number ); ?>
 											</a>
 										<?php else : ?>
-											ORDINE #<?php echo esc_html( $order_number ); ?>
+											ORDINE N. <?php echo esc_html( $order_number ); ?>
 										<?php endif; ?>
 									</td>
 								</tr>
 								<tr>
-									<td style="width:180px;padding:10px 14px;border-bottom:1px solid #eee;font-weight:bold;">NOME e COGNOME</td>
-									<td style="padding:10px 14px;border-bottom:1px solid #eee;"><?php echo esc_html( $customer_name ); ?> (<?php echo esc_html( $email ); ?>)</td>
+									<td style="width:180px;padding:10px 14px;border-bottom:1px solid #eee;font-weight:bold;">CLIENTE</td>
+									<td style="padding:10px 14px;border-bottom:1px solid #eee;"><?php echo esc_html( $customer_name ); ?><br>(<?php echo esc_html( $email ); ?>)</td>
 								</tr>
 								<tr>
-									<td style="padding:10px 14px;border-bottom:1px solid #eee;font-weight:bold;">IMPORTO TOTALE</td>
+									<td style="padding:10px 14px;border-bottom:1px solid #eee;font-weight:bold;">TOT. ORDINE</td>
 									<td style="padding:10px 14px;border-bottom:1px solid #eee;"><?php echo wp_kses_post( $total ); ?></td>
 								</tr>
 								<tr>
-									<td style="padding:10px 14px;border-bottom:1px solid #eee;font-weight:bold;">METODO DI SPEDIZIONE</td>
+									<td style="padding:10px 14px;border-bottom:1px solid #eee;font-weight:bold;">SPEDIZIONE</td>
 									<td style="padding:10px 14px;border-bottom:1px solid #eee;"><?php echo esc_html( $shipping ); ?></td>
 								</tr>
 								<tr>
-									<td style="padding:10px 14px;border-bottom:1px solid #eee;font-weight:bold;">METODO DI PAGAMENTO</td>
+									<td style="padding:10px 14px;border-bottom:1px solid #eee;font-weight:bold;">PAGAMENTO</td>
 									<td style="padding:10px 14px;border-bottom:1px solid #eee;"><?php echo esc_html( $payment ); ?></td>
 								</tr>
 								<tr>
-									<td style="padding:10px 14px;vertical-align:top;font-weight:bold;">PRODOTTI e VARIAZIONI</td>
-									<td style="padding:10px 14px;">
-										<?php echo self::items_html( $order ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-									</td>
+									<td style="padding:10px 14px;vertical-align:top;font-weight:bold;">PRODOTTI</td>
+									<td style="padding:10px 14px;"><?php echo self::items_html( $order ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
 								</tr>
 							</table>
 						<?php endforeach; ?>
@@ -526,7 +524,7 @@ final class CB_WC_24H_Orders_Email_Report {
 			$instance = $shipping_item->get_instance_id();
 
 			if ( $instance ) {
-				$label .= ' #' . $instance;
+				$label .= ' (' . $instance . ')';
 			}
 
 			if ( $label ) {
@@ -576,10 +574,10 @@ final class CB_WC_24H_Orders_Email_Report {
 			}
 
 			$html .= '<li style="margin-bottom:6px;">';
-			$html .= '<strong>' . esc_html( $name ) . '</strong>';
+			$html .= '<strong>' . esc_html( $name ) . '</strong><br>';
 			$html .= esc_html( $variation_text );
-			$html .= ' — SKU: <strong>' . esc_html( $sku ? $sku : 'N/D' ) . '</strong>';
-			$html .= ' — Q.tà: <strong>' . esc_html( $qty ) . '</strong>';
+			$html .= '<br>EAN: <strong>' . esc_html( $sku ? $sku : 'N/D' ) . '</strong>';
+			$html .= '<br>Q.tà: <strong>' . esc_html( $qty ) . '</strong>';
 			$html .= '</li>';
 		}
 
@@ -593,3 +591,59 @@ CB_WC_24H_Orders_Email_Report::init();
 
 register_activation_hook( __FILE__, array( 'CB_WC_24H_Orders_Email_Report', 'activate' ) );
 register_deactivation_hook( __FILE__, array( 'CB_WC_24H_Orders_Email_Report', 'deactivate' ) );
+
+/**
+ * Sistema di aggiornamento GitHub dinamico
+ */
+
+/**
+ * L'updater è opzionale: se la libreria non è presente o non espone
+ * PucFactory, il plugin continua a funzionare senza causare un fatal error.
+ */
+function wc_export_inizializza_aggiornatore_github() {
+    $puc_file = plugin_dir_path( __FILE__ ) . 'plugin-update-checker/plugin-update-checker.php';
+
+    if ( ! file_exists( $puc_file ) ) {
+        return;
+    }
+
+    require_once $puc_file;
+
+    $factory_class = '\YahnisElsts\PluginUpdateChecker\v5\PucFactory';
+
+    if ( ! class_exists( $factory_class ) ) {
+        return;
+    }
+
+    try {
+        $my_update_checker = call_user_func(
+            array( $factory_class, 'buildUpdateChecker' ),
+            'https://github.com/DeepVoid/wc-24h-orders-email-report',
+            __FILE__,
+            'woocommerce-24h-orders-email-report'
+        );
+
+        if ( is_object( $my_update_checker ) ) {
+            if ( method_exists( $my_update_checker, 'getVcsApi' ) ) {
+                $vcs_api = $my_update_checker->getVcsApi();
+
+                if ( is_object( $vcs_api ) && method_exists( $vcs_api, 'enableReleaseAssets' ) ) {
+                    $vcs_api->enableReleaseAssets( '/\.zip($|[?&#])/i' );
+                }
+            }
+
+            if ( method_exists( $my_update_checker, 'setBranch' ) ) {
+                $my_update_checker->setBranch( 'main' );
+            }
+        }
+    } catch ( \Throwable $e ) {
+        // L'aggiornamento automatico non deve mai impedire il caricamento del plugin.
+        if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+            error_log(
+                'Plugin Update Checker: ' . $e->getMessage()
+            );
+        }
+    }
+}
+
+add_action( 'plugins_loaded', 'wc_export_inizializza_aggiornatore_github', 20 );
