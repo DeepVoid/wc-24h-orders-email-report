@@ -524,7 +524,7 @@ final class CB_WC_24H_Orders_Email_Report {
 			$instance = $shipping_item->get_instance_id();
 
 			if ( $instance ) {
-				$label .= ' (' . $instance . ')';
+				//$label .= ' (' . $instance . ')';
 			}
 
 			if ( $label ) {
@@ -569,7 +569,8 @@ final class CB_WC_24H_Orders_Email_Report {
 				}
 
 				if ( ! empty( $parts ) ) {
-					$variation_text = ' – ' . implode( ', ', $parts );
+					//$variation_text = ' – ' . implode( ', ', $parts );
+					$variation_text = ' – ' . implode( '<br>', $parts );	// separa gli elementi dell'array su righe diverse
 				}
 			}
 
@@ -637,7 +638,7 @@ function wc_export_inizializza_aggiornatore_github() {
             }
         }
     } catch ( \Throwable $e ) {
-        // L'aggiornamento automatico non deve mai impedire il caricamento del plugin.
+        // L'aggiornamento automatico non deve mai impedire il caricamento del plugin
         if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
             error_log(
                 'Plugin Update Checker: ' . $e->getMessage()
