@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/DeepVoid/wc-24h-orders-email-report
  * Text Domain: woocommerce-24h-orders-email-report
  * Description: Invia automaticamente via email il report degli ordini ricevuti nelle ultime 24 ore, con destinatari e orario configurabili.
- * Version: 1.1.1
+ * Version: 1.1.2
  * Author: Alex Vannini - DeepVoid
  * Requires at least: 6.5
  * Requires PHP: 7.4
@@ -459,6 +459,11 @@ final class CB_WC_24H_Orders_Email_Report {
 					<?php else : ?>
 						<?php foreach ( $orders as $order ) : ?>
 							<?php
+							// controllo difensivo all'inizio del ciclo foreach della funzione build_email()
+							// se $order non è un oggetto WooCommerce valido di tipo WC_Order (o una sua sottoclasse), il ciclo salta in sicurezza l'elemento senza interrompere l'esecuzione, evitando qualsiasi fatal error sul server
+							if ( ! is_a( $order, 'WC_Order' ) ) {
+								continue;
+							}
 							$order_number = $order->get_order_number();
 							$customer_name = trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() );
 							if ( '' === $customer_name ) {
