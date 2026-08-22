@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/DeepVoid/wc-24h-orders-email-report
  * Text Domain: woocommerce-24h-orders-email-report
  * Description: Invia automaticamente via email il report degli ordini ricevuti nelle ultime 24 ore, con destinatari e orario configurabili.
- * Version: 1.1.3
+ * Version: 1.1.4
  * Author: Alex Vannini - DeepVoid
  * Requires at least: 6.5
  * Requires PHP: 7.4
@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class CB_WC_24H_Orders_Email_Report {
 
-	const VERSION    = '1.1.3';
+	const VERSION    = '1.1.4';
 	const AS_GROUP   = 'cb-wc-24h-report';
 	const OPTION_KEY = 'cb_wc_24h_report_settings';
 	const CRON_HOOK  = 'cb_wc_24h_report_send';
@@ -430,8 +430,8 @@ final class CB_WC_24H_Orders_Email_Report {
 
 	private static function build_email( $orders, $settings, $from, $now, $test = false ) {
 		$site_name = wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
-		$from_text = wp_date( 'd/m/Y H:i', $from );
-		$to_text   = wp_date( 'd/m/Y H:i', $now );
+		$from_text = wp_date( 'd/m/Y - Ore H:i', $from );
+		$to_text   = wp_date( 'd/m/Y - Ore H:i', $now );
 
 		ob_start();
 		?>
@@ -442,10 +442,10 @@ final class CB_WC_24H_Orders_Email_Report {
 			<title><?php echo esc_html( $site_name ); ?> – Report ordini</title>
 		</head>
 		<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;color:#222;">
-			<div style="max-width:1000px;margin:0 auto;padding:0px;">
+			<div style="max-width:100%;margin:0 auto;padding:0px;">
 				<div style="background:#fff;padding:0px;border:0px;">
-					<h2 style="margin:0 0 8px;font-size:14px;">REPORT ORDINI</h2>
-					<p style="margin:0 0 14px;color:#666;">
+					<h2 style="margin:0 0 8px;font-size:14px;text-align: center;">REPORT ORDINI</h2>
+					<p style="margin:0 0 14px;color:#666;text-align: center;">
 						Periodo:<br>dal <?php echo esc_html( $from_text ); ?><br>al <?php echo esc_html( $to_text ); ?>
 						<?php if ( $test ) : ?>
 							<br><strong>EMAIL DI TEST</strong>
@@ -479,13 +479,13 @@ final class CB_WC_24H_Orders_Email_Report {
 							?>
 							<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 24px;border:1px solid #ddd;">
 								<tr>
-									<td colspan="2" style="background:#222;color:#fff;padding:0px 10px;font-size:14px;font-weight:bold;">
+									<td colspan="2" style="background:#188f00;color:#fff;padding:10px 10px;font-size:14px;font-weight:bold;">
 										<?php if ( 'yes' === $settings['include_order_link'] && current_user_can( 'manage_woocommerce' ) ) : ?>
 											<a href="<?php echo esc_url( $order->get_edit_order_url() ); ?>" style="color:#fff;text-decoration:none;">
-												ORDINE N. <?php echo esc_html( $order_number ); ?> ➜ <b><?php echo wc_get_order_status_name($order->get_status()) ?></b>
+												ORDINE N. <?php echo esc_html( $order_number ); ?> ➜ <?php echo wc_get_order_status_name($order->get_status()) ?>
 											</a>
 										<?php else : ?>
-											ORDINE N. <?php echo esc_html( $order_number ); ?> ➜ <b><?php echo wc_get_order_status_name($order->get_status()) ?></b>
+											ORDINE N. <?php echo esc_html( $order_number ); ?> ➜ <?php echo wc_get_order_status_name($order->get_status()) ?>
 										<?php endif; ?>
 									</td>
 								</tr>
@@ -509,12 +509,11 @@ final class CB_WC_24H_Orders_Email_Report {
 									<td style="padding:10px 10px;vertical-align:top;font-weight:bold;font-size: .95em;">PRODOTTI</td>
 									<td style="padding:10px 0px;"><?php echo self::items_html( $order ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
 								</tr>
-								<tr>
-									<td style="padding:10px;vertical-align:top;font-weight:bold;font-size: .95em;background-color:#ccc;">Report inviato da <b>WooCommerce 24h Orders Email Report</b> di <b>Alex Vannini</b> - <b>DeepVoid</b> ➜ <a href="https://github.com/DeepVoid/wc-24h-orders-email-report">[GitHub]</a></td>
-								</tr>
 							</table>
 						<?php endforeach; ?>
 					<?php endif; ?>
+				</div style="margin-top:10px;padding:10px;vertical-align:middle;font-size: .95em;background-color:#ccc;">
+					Report inviato da <b>WooCommerce 24h Orders Email Report</b> di <b>Alex Vannini</b> - <b>DeepVoid</b> ➜ <a href="https://github.com/DeepVoid/wc-24h-orders-email-report">[GitHub]</a>
 				</div>
 			</div>
 		</body>
@@ -578,15 +577,15 @@ final class CB_WC_24H_Orders_Email_Report {
 
 				if ( ! empty( $parts ) ) {
 					//$variation_text = ' – ' . implode( ', ', $parts );
-					$variation_text = ' – ' . implode( '<br>', $parts );	// separa gli elementi dell'array su righe diverse
+					  $variation_text = '<br>' . implode( ', ', $parts );	// separa gli elementi dell'array su righe diverse
 				}
 			}
 
 			$html .= '<li style="margin-bottom:6px;">';
 			$html .= '<strong>' . esc_html( $name ) . '</strong><br>';
 			$html .= esc_html( $variation_text );
-			$html .= '<br>EAN: <strong>' . esc_html( $sku ? $sku : 'N/D' ) . '</strong>';
-			$html .= '<br>Q.tà: <strong>' . esc_html( $qty ) . '</strong>';
+			$html .= '<br>EAN: ' . esc_html( $sku ? $sku : 'N/D' );
+			$html .= '<br>Pezzi: ' . esc_html( $qty );
 			$html .= '</li>';
 		}
 
