@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/DeepVoid/wc-24h-orders-email-report
  * Text Domain: woocommerce-24h-orders-email-report
  * Description: Invia automaticamente via email il report degli ordini ricevuti nelle ultime 24 ore, con destinatari e orario configurabili.
- * Version: 1.1.2
+ * Version: 1.1.3
  * Author: Alex Vannini - DeepVoid
  * Requires at least: 6.5
  * Requires PHP: 7.4
@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class CB_WC_24H_Orders_Email_Report {
 
-	const VERSION    = '1.1.1';
+	const VERSION    = '1.1.3';
 	const AS_GROUP   = 'cb-wc-24h-report';
 	const OPTION_KEY = 'cb_wc_24h_report_settings';
 	const CRON_HOOK  = 'cb_wc_24h_report_send';
@@ -443,10 +443,10 @@ final class CB_WC_24H_Orders_Email_Report {
 		</head>
 		<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;color:#222;">
 			<div style="max-width:1000px;margin:0 auto;padding:0px;">
-				<div style="background:#fff;padding:24px;border:0px;">
-					<h2 style="margin:0 0 8px;font-size:14px;"><?php echo esc_html( $site_name ); ?> – Report ordini</h2>
-					<p style="margin:0 0 24px;color:#666;">
-						Periodo: dal <?php echo esc_html( $from_text ); ?> al <?php echo esc_html( $to_text ); ?>
+				<div style="background:#fff;padding:0px;border:0px;">
+					<h2 style="margin:0 0 8px;font-size:14px;">REPORT ORDINI</h2>
+					<p style="margin:0 0 14px;color:#666;">
+						Periodo:<br>dal <?php echo esc_html( $from_text ); ?><br>al <?php echo esc_html( $to_text ); ?>
 						<?php if ( $test ) : ?>
 							<br><strong>EMAIL DI TEST</strong>
 						<?php endif; ?>
@@ -482,32 +482,35 @@ final class CB_WC_24H_Orders_Email_Report {
 									<td colspan="2" style="background:#222;color:#fff;padding:0px 10px;font-size:14px;font-weight:bold;">
 										<?php if ( 'yes' === $settings['include_order_link'] && current_user_can( 'manage_woocommerce' ) ) : ?>
 											<a href="<?php echo esc_url( $order->get_edit_order_url() ); ?>" style="color:#fff;text-decoration:none;">
-												ORDINE N. <?php echo esc_html( $order_number ); ?>
+												ORDINE N. <?php echo esc_html( $order_number ); ?> ➜ <b><?php echo wc_get_order_status_name($order->get_status()) ?></b>
 											</a>
 										<?php else : ?>
-											ORDINE N. <?php echo esc_html( $order_number ); ?>
+											ORDINE N. <?php echo esc_html( $order_number ); ?> ➜ <b><?php echo wc_get_order_status_name($order->get_status()) ?></b>
 										<?php endif; ?>
 									</td>
 								</tr>
 								<tr>
-									<td style="width:180px;padding:10px 14px;border-bottom:1px solid #eee;font-weight:bold;">CLIENTE</td>
-									<td style="padding:10px 14px;border-bottom:1px solid #eee;"><?php echo esc_html( $customer_name ); ?><br>(<?php echo esc_html( $email ); ?>)</td>
+									<td style="width:130px;padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;">CLIENTE</td>
+									<td style="padding:10px 0px;border-bottom:1px solid #eee;"><?php echo esc_html( $customer_name ); ?><br>(<?php echo esc_html( $email ); ?>)</td>
 								</tr>
 								<tr>
-									<td style="padding:10px 14px;border-bottom:1px solid #eee;font-weight:bold;">TOT. ORDINE</td>
-									<td style="padding:10px 14px;border-bottom:1px solid #eee;"><?php echo wp_kses_post( $total ); ?></td>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;">TOT. ORDINE</td>
+									<td style="padding:10px 0px;border-bottom:1px solid #eee;"><?php echo wp_kses_post( $total ); ?></td>
 								</tr>
 								<tr>
-									<td style="padding:10px 14px;border-bottom:1px solid #eee;font-weight:bold;">SPEDIZIONE</td>
-									<td style="padding:10px 14px;border-bottom:1px solid #eee;"><?php echo esc_html( $shipping ); ?></td>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;">SPEDIZIONE</td>
+									<td style="padding:10px 0px;border-bottom:1px solid #eee;"><?php echo esc_html( $shipping ); ?></td>
 								</tr>
 								<tr>
-									<td style="padding:10px 14px;border-bottom:1px solid #eee;font-weight:bold;">PAGAMENTO</td>
-									<td style="padding:10px 14px;border-bottom:1px solid #eee;"><?php echo esc_html( $payment ); ?></td>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;">PAGAMENTO</td>
+									<td style="padding:10px 0px;border-bottom:1px solid #eee;"><?php echo esc_html( $payment ); ?></td>
 								</tr>
 								<tr>
-									<td style="padding:10px 14px;vertical-align:top;font-weight:bold;">PRODOTTI</td>
-									<td style="padding:10px 14px;"><?php echo self::items_html( $order ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+									<td style="padding:10px 10px;vertical-align:top;font-weight:bold;font-size: .95em;">PRODOTTI</td>
+									<td style="padding:10px 0px;"><?php echo self::items_html( $order ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+								</tr>
+								<tr>
+									<td style="padding:10px;vertical-align:top;font-weight:bold;font-size: .95em;background-color:#ccc;">Report inviato da <b>WooCommerce 24h Orders Email Report</b> di <b>Alex Vannini</b> - <b>DeepVoid</b> ➜ <a href="https://github.com/DeepVoid/wc-24h-orders-email-report">[GitHub]</a></td>
 								</tr>
 							</table>
 						<?php endforeach; ?>
