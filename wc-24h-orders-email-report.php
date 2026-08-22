@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/DeepVoid/wc-24h-orders-email-report
  * Text Domain: woocommerce-24h-orders-email-report
  * Description: Invia automaticamente via email il report degli ordini ricevuti nelle ultime 24 ore, con destinatari e orario configurabili.
- * Version: 1.1.5
+ * Version: 1.1.6
  * Author: Alex Vannini - DeepVoid
  * Requires at least: 6.5
  * Requires PHP: 7.4
@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class CB_WC_24H_Orders_Email_Report {
 
-	const VERSION    = '1.1.5';
+	const VERSION    = '1.1.6';
 	const AS_GROUP   = 'cb-wc-24h-report';
 	const OPTION_KEY = 'cb_wc_24h_report_settings';
 	const CRON_HOOK  = 'cb_wc_24h_report_send';
@@ -29,7 +29,6 @@ final class CB_WC_24H_Orders_Email_Report {
 		add_action( self::CRON_HOOK, array( __CLASS__, 'send_scheduled_report' ) );
 		add_action( 'admin_post_cb_wc_24h_test_report', array( __CLASS__, 'handle_test_report' ) );
 		add_action( 'admin_post_cb_wc_24h_send_now', array( __CLASS__, 'handle_send_now' ) );
-
 		add_action( 'update_option_' . self::OPTION_KEY, array( __CLASS__, 'reschedule_after_settings_update' ), 10, 3 );
 	}
 
@@ -247,7 +246,7 @@ final class CB_WC_24H_Orders_Email_Report {
 			as_unschedule_all_actions( self::CRON_HOOK, array(), self::AS_GROUP );
 		}
 
-		// Remove legacy WP-Cron events created by previous plugin versions.
+		// Rimuove gli eventi WP-Cron legacy creati da precedenti release del plugin
 		$timestamp = wp_next_scheduled( self::CRON_HOOK );
 		while ( $timestamp ) {
 			wp_unschedule_event( $timestamp, self::CRON_HOOK );
@@ -393,23 +392,26 @@ final class CB_WC_24H_Orders_Email_Report {
 			return true;
 		}
 
+		// imposta il subject dell'email
 		$subject = sprintf(
-			'[%s] Report ordini ultime 24 ore – %d ordin%s',
-			wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
+			'Report ultime 24h – %d ordin%s',
 			count( $orders ),
 			1 === count( $orders ) ? 'e' : 'i'
 		);
 
 		$body = self::build_email( $orders, $settings, $from, $now, $test );
 
+		// imposta gli header dell'email di report
 		$headers = array(
 			'Content-Type: text/html; charset=UTF-8',
+			'From: Report ordini <noreply@campobase.net>',
 		);
 
+		// invia l'email via SMTP tramite la funzione wp_mail() di Wordpress
 		$sent = wp_mail( $recipients, $subject, $body, $headers );
 
 		if ( ! $sent ) {
-			return new WP_Error( 'mail_failed', 'WordPress non ha potuto inviare la email. Controlla la configurazione SMTP del sito.' );
+			return new \WP_Error( 'mail_failed', 'WordPress non ha potuto inviare la email. Controlla la configurazione SMTP del sito.' );
 		}
 
 		return true;
@@ -442,7 +444,7 @@ final class CB_WC_24H_Orders_Email_Report {
 			<meta charset="UTF-8">
 			<title><?php echo esc_html( $site_name ); ?> – Report ordini</title>
 		</head>
-		<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;color:#222;">
+		<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;color:#222;">
 			<div style="max-width:100%;margin:0 auto;padding:0px;">
 				<div style="background:#fff;padding:0px;border:0px;">
 					<h2 style="margin:0 0 8px;font-size:14px;text-align: center;">REPORT ORDINI</h2>
@@ -465,6 +467,7 @@ final class CB_WC_24H_Orders_Email_Report {
 							if ( ! is_a( $order, 'WC_Order' ) ) {
 								continue;
 							}
+								
 							$order_number = $order->get_order_number();
 							$customer_name = trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() );
 							if ( '' === $customer_name ) {
@@ -477,6 +480,22 @@ final class CB_WC_24H_Orders_Email_Report {
 							if ( '' === $payment ) {
 								$payment = $order->get_payment_method();
 							}
+
+							// recupera il valore del campo 'invoice_selected' generato da Checkout Field Editor for WooCommerce by Themehigh nei metadati dell'ordine corrente
+							$invoice_selected = $order->get_meta('invoice_selected', true);
+							$invoice_requested = ! empty($invoice_selected) ? 'Fattura: sì' : 'Fattura: no';
+
+							// recupera i dati della Carta Regalo Campo Base, se è stata utilizzata per pagare l'ordine - Pimwick PW Gift Card
+							$gift_cards_found = array();
+
+							foreach ( $order->get_items( 'pw_gift_card' ) as $order_item ) {
+								$pw_card_number = $order_item->get_card_number();
+								if ( ! empty( $pw_card_number ) ) {
+									$gift_cards_found[] = $pw_card_number;
+								}
+							}
+
+							$gift_cards_found = ! empty( $gift_cards_found ) ? implode( ', ', array_unique( $gift_cards_found ) ) : 'NO';
 							?>
 							<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 24px;border:1px solid #ddd;">
 								<tr>
@@ -492,11 +511,15 @@ final class CB_WC_24H_Orders_Email_Report {
 								</tr>
 								<tr>
 									<td style="width:110px;padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;">CLIENTE</td>
-									<td style="padding:10px 0px;border-bottom:1px solid #eee;"><?php echo esc_html( $customer_name ); ?><br>(<?php echo esc_html( $email ); ?>)</td>
+									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo esc_html( $customer_name ); ?><br>(<?php echo esc_html( $email ); ?>)</td>
 								</tr>
 								<tr>
 									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;">TOT. ORDINE</td>
-									<td style="padding:10px 0px;border-bottom:1px solid #eee;"><?php echo wp_kses_post( $total ); ?></td>
+									<td style="padding:10px 0px;border-bottom:1px solid #eee;"><?php echo wp_kses_post( $total ) . ' (' . $invoice_requested . ')'; ?></td>
+								</tr>
+								<tr>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;">CARTA REGALO?</td>
+									<td style="padding:10px 0px;border-bottom:1px solid #eee;"><?php echo esc_html( $gift_cards_found ); ?></td>
 								</tr>
 								<tr>
 									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;">SPEDIZIONE</td>
@@ -508,15 +531,16 @@ final class CB_WC_24H_Orders_Email_Report {
 								</tr>
 								<tr>
 									<td style="padding:10px 10px;vertical-align:top;font-weight:bold;font-size: .95em;">PRODOTTI</td>
-									<td style="padding:10px 0px;"><?php echo self::items_html( $order ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+									<td style="padding:10px 5px;"><?php echo self::items_html( $order ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
 								</tr>
 							</table>
 						<?php endforeach; ?>
 					<?php endif; ?>
 				<div style="margin-top:10px;padding:10px;border-radius: 8px;font-size: .95em;background-color:#ccc;text-align: center;">
-					Report inviato da<br>
-					<b>WooCommerce 24h Orders Email Report</b><br>
-					di <b>Alex Vannini</b> - <b>DeepVoid</b> ➜ <a href="https://github.com/DeepVoid/wc-24h-orders-email-report">[GitHub]</a>
+					Report riservato inviato da<br>
+					<b>WooCommerce 24h Orders Email Report</b> <?php echo self::VERSION ?><br>
+					di <b>Alex Vannini</b> - <b>DeepVoid</b> ➜ <a href="https://github.com/DeepVoid/wc-24h-orders-email-report">[GitHub]</a><br>
+					<a href="<?php echo wp_specialchars_decode( get_bloginfo( 'url' ), ENT_QUOTES ) ?>" style="text-decoration:none; font-weight:bold;"><?php echo $site_name ?></a>
 				</div>
 			</div>
 		</body>
@@ -557,6 +581,13 @@ final class CB_WC_24H_Orders_Email_Report {
 			$name    = $item->get_name();
 			$qty     = $item->get_quantity();
 			$sku     = $product ? $product->get_sku() : '';
+			// Per le variazioni, mostra solo il nome del prodotto padre.
+			if ( $product && $product->is_type( 'variation' ) ) {
+				$parent_product = wc_get_product( $product->get_parent_id() );
+				if ( $parent_product ) {
+					$name = $parent_product->get_name();
+				}
+			}
 
 			$variation_text = '';
 			if ( $product && $product->is_type( 'variation' ) ) {
@@ -579,16 +610,16 @@ final class CB_WC_24H_Orders_Email_Report {
 				}
 
 				if ( ! empty( $parts ) ) {
-					//$variation_text = ' – ' . implode( ', ', $parts );
-					$variation_text = implode( ', ', $parts );	// separa gli elementi dell'array su righe diverse
+					// divide ogni elemento dell'array su una nuova riga
+					$variation_text = implode( '<br>', array_map( 'esc_html', $parts ) );
 				}
 			}
 
 			$html .= '<li style="margin-bottom:6px;">';
 			$html .= '<strong>' . esc_html( $name ) . '</strong><br>';
-			$html .= esc_html( $variation_text );
+			$html .= $variation_text;
 			$html .= '<br>EAN: ' . esc_html( $sku ? $sku : 'N/D' );
-			$html .= '<br>Pezzi: ' . esc_html( $qty );
+			$html .= '<br>Quantità: ' . esc_html( $qty );
 			$html .= '</li>';
 		}
 
