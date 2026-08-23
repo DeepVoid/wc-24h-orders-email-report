@@ -491,12 +491,14 @@ final class CB_WC_24H_Orders_Email_Report {
 							foreach ( $order_coupons as $coupon ) {
 								$coupon_code = $coupon->get_code();
 							}
-							$coupon_found = ! empty( $coupon_code ) ? '<div style="width:127px;text-align: center;font-size:0.8em;display:inline-block;margin-left:3px;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . esc_html( $coupon_code ) . '</div>' : '<div style="width:127px;text-align: center;font-size:0.8em;display:inline-block;margin-left:3px;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
+							$coupon_found = ! empty( $coupon_code ) ? '<div style="width:137px;text-align: center;font-size:0.8em;display:inline-block;margin-left:3px;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . esc_html( $coupon_code ) . '</div>' : '<div style="width:137px;text-align: center;font-size:0.8em;display:inline-block;margin-left:3px;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
 							
 							$shipping = self::shipping_methods_text( $order );
 							$payment = $order->get_payment_method_title();
 							if ( '' === $payment ) {
-								$payment = $order->get_payment_method();
+								$payment = '<div style="width:137px;text-align: center;font-size:0.8em;display:inline-block;margin-left:3px;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NESSUNO</div>';
+							} else {
+								$payment = '<div style="width:137px;text-align: center;font-size:0.8em;display:inline-block;margin-left:3px;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . $order->get_payment_method_title() . '</div>';
 							}
 
 							// recupera lo stato di lavorazione dell'ordine e decide il colore di sfondo del badge da visualizzare nell'email
@@ -539,7 +541,7 @@ final class CB_WC_24H_Orders_Email_Report {
 								}
 							}
 
-							$gift_cards_found = ! empty( $gift_cards_found ) ? '<div style="width:127px;text-align: center;font-size:0.8em;display:inline-block;margin-left:3px;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . esc_html( implode( ', ', array_unique( $gift_cards_found ) ) ) . '</div>' : '<div style="width:127px;text-align: center;font-size:0.8em;display:inline-block;margin-left:3px;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
+							$gift_cards_found = ! empty( $gift_cards_found ) ? '<div style="width:137px;text-align: center;font-size:0.8em;display:inline-block;margin-left:3px;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . esc_html( implode( ', ', array_unique( $gift_cards_found ) ) ) . '</div>' : '<div style="width:137px;text-align: center;font-size:0.8em;display:inline-block;margin-left:3px;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
 							?>
 							<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 24px;border:1px solid #ddd;">
 								<tr>
@@ -579,7 +581,7 @@ final class CB_WC_24H_Orders_Email_Report {
 								</tr>
 								<tr>
 									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">PAGAMENTO</td>
-									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo esc_html( $payment ); ?></td>
+									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo $payment; ?></td>
 								</tr>
 								<tr>
 									<td style="padding:10px 10px;vertical-align:top;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">PRODOTTI</td>
