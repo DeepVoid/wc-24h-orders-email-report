@@ -507,10 +507,10 @@ final class CB_WC_24H_Orders_Email_Report {
 									<td colspan="2" style="background:#188f00;color:#fff;padding:10px 10px;font-size:14px;font-weight:bold;">
 										<?php if ( 'yes' === $settings['include_order_link'] && current_user_can( 'manage_woocommerce' ) ) : ?>
 											<a href="<?php echo esc_url( $order->get_edit_order_url() ); ?>" style="color:#fff;text-decoration:none;">
-												ORDINE N. <?php echo esc_html( $order_number ); ?> ➜ <?php echo wc_get_order_status_name($order->get_status()) ?>
+												ORDINE N. <?php echo esc_html( $order_number ); ?> <div style="width:100px;text-align: center;font-size: 0.8em;display: inline-block;margin-left: 3px;background-color:#1dae00;font-color:#fff;padding:2px;border-radius:6px;font-weight:bold;">➜ <?php echo wc_get_order_status_name($order->get_status()) ?></div>
 											</a>
 										<?php else : ?>
-											ORDINE N. <?php echo esc_html( $order_number ); ?> ➜ <?php echo wc_get_order_status_name($order->get_status()) ?>
+											ORDINE N. <?php echo esc_html( $order_number ); ?> <div style="width:100px;text-align: center;font-size: 0.8em;display: inline-block;margin-left: 3px;background-color:#1dae00;font-color:#fff;padding:2px;border-radius:6px;font-weight:bold;">➜ <?php echo wc_get_order_status_name($order->get_status()) ?></div>
 										<?php endif; ?>
 									</td>
 								</tr>
