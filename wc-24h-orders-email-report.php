@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/DeepVoid/wc-24h-orders-email-report
  * Text Domain: woocommerce-24h-orders-email-report
  * Description: Invia automaticamente via email il report degli ordini ricevuti nelle ultime 24 ore, con destinatari e orario configurabili.
- * Version: 1.1.6
+ * Version: 1.1.7
  * Author: Alex Vannini - DeepVoid
  * Requires at least: 6.5
  * Requires PHP: 7.4
@@ -22,7 +22,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class CB_WC_24H_Orders_Email_Report {
 
-	const VERSION    = '1.1.6';
+	const VERSION    = '1.1.7';
 	const AS_GROUP   = 'cb-wc-24h-report';
 	const OPTION_KEY = 'cb_wc_24h_report_settings';
 	const CRON_HOOK  = 'cb_wc_24h_report_send';
@@ -480,17 +480,56 @@ final class CB_WC_24H_Orders_Email_Report {
 							}
 							$email = $order->get_billing_email();
 							$total = $order->get_formatted_order_total();
+							$order_subtotal = $order->get_subtotal();
+							$order_total_discount = $order->get_total_discount();
+							$order_tax = $order->get_total_tax();
+							$order_total_value = $order_subtotal + $order_shipping_total + $order_tax - $order_total_discount;
+							$formatted_total_value = wc_price( $order_total_value, array( 'currency' => $order->get_currency() ) );
+							
+							// recupera i codici coupon eventualmente applicati all'ordine corrente
+							$order_coupons = $order->get_coupons();
+							foreach ( $order_coupons as $coupon ) {
+								$coupon_code = $coupon->get_code();
+							}
+							$coupon_found = ! empty( $coupon_code ) ? '<div style="width:127px;text-align: center;font-size:0.8em;display:inline-block;margin-left:3px;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . esc_html( $coupon_code ) . '</div>' : '<div style="width:127px;text-align: center;font-size:0.8em;display:inline-block;margin-left:3px;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
+							
 							$shipping = self::shipping_methods_text( $order );
 							$payment = $order->get_payment_method_title();
 							if ( '' === $payment ) {
 								$payment = $order->get_payment_method();
 							}
 
+							// recupera lo stato di lavorazione dell'ordine e decide il colore di sfondo del badge da visualizzare nell'email
+							$order_status = wc_get_order_status_name($order->get_status());
+							switch ( $order_status ) {
+								case 'In attesa di pagamento':
+									$status_badge_bgcolor = '#ffed7b';
+									break;
+								case 'In lavorazione':
+									$status_badge_bgcolor = '#20c200';
+									break;
+								case 'In sospeso':
+									$status_badge_bgcolor = '#0091f8';
+									break;
+								case 'Completato':
+									$status_badge_bgcolor = '#797979';
+									break;
+								case 'Fallito':
+									$status_badge_bgcolor = '#fc0000';
+									break;
+								case 'Annullato':
+									$status_badge_bgcolor = '#888888';
+									break;
+								default:
+									$status_badge_bgcolor = '#1dae00';
+									break;
+							}
+
 							// recupera il valore del campo 'invoice_selected' generato da Checkout Field Editor for WooCommerce by Themehigh nei metadati dell'ordine corrente
 							$invoice_selected = $order->get_meta('invoice_selected', true);
-							$invoice_requested = ! empty($invoice_selected) ? '' : ' <div style="width:70px;text-align: center;font-size: 0.8em;display: inline-block;margin-left: 3px;background-color:#ffb500;font-color:#fff;padding:2px;border-radius:6px;font-weight:bold;">➜ FATTURA</div>';
+							$invoice_requested = ! empty($invoice_selected) ? ' <div style="width:70px;text-align: center;font-size: 0.8em;display: inline-block;margin-left: 3px;background-color:#ffb500;font-color:#fff;padding:2px;border-radius:6px;font-weight:bold;">➜ FATTURA</div>' : '';
 
-							// recupera i dati della Carta Regalo Campo Base, se è stata utilizzata per pagare l'ordine - Pimwick PW Gift Card
+							// recupera i dati della Carta Regalo Campo Base eventualmente utilizzata per pagare l'ordine - Pimwick PW Gift Card
 							$gift_cards_found = array();
 
 							foreach ( $order->get_items( 'pw_gift_card' ) as $order_item ) {
@@ -500,17 +539,17 @@ final class CB_WC_24H_Orders_Email_Report {
 								}
 							}
 
-							$gift_cards_found = ! empty( $gift_cards_found ) ? implode( ', ', array_unique( $gift_cards_found ) ) : 'NO';
+							$gift_cards_found = ! empty( $gift_cards_found ) ? '<div style="width:127px;text-align: center;font-size:0.8em;display:inline-block;margin-left:3px;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . esc_html( implode( ', ', array_unique( $gift_cards_found ) ) ) . '</div>' : '<div style="width:127px;text-align: center;font-size:0.8em;display:inline-block;margin-left:3px;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
 							?>
 							<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 24px;border:1px solid #ddd;">
 								<tr>
-									<td colspan="2" style="background:#188f00;color:#fff;padding:10px 10px;font-size:14px;font-weight:bold;">
+									<td colspan="2" style="background:#188f00;color:#fff;padding:10px 10px;font-size:14px;font-weight:bold;text-align: center;">
 										<?php if ( 'yes' === $settings['include_order_link'] && current_user_can( 'manage_woocommerce' ) ) : ?>
 											<a href="<?php echo esc_url( $order->get_edit_order_url() ); ?>" style="color:#fff;text-decoration:none;">
-												ORDINE N. <?php echo esc_html( $order_number ); ?> <div style="width:100px;text-align: center;font-size: 0.8em;display: inline-block;margin-left: 3px;background-color:#1dae00;font-color:#fff;padding:2px;border-radius:6px;font-weight:bold;">➜ <?php echo wc_get_order_status_name($order->get_status()) ?></div>
+												ORDINE N. <?php echo esc_html( $order_number ); ?> <div style="width:100px;text-align: center;font-size: 0.8em;display: inline-block;margin-left: 3px;background-color:<?php echo esc_attr( $status_badge_bgcolor ); ?>;font-color:#fff;padding:2px;border-radius:6px;font-weight:bold;border: 1px solid #ffffff;">➜ <?php echo wc_get_order_status_name($order->get_status()) ?></div>
 											</a>
 										<?php else : ?>
-											ORDINE N. <?php echo esc_html( $order_number ); ?> <div style="width:100px;text-align: center;font-size: 0.8em;display: inline-block;margin-left: 3px;background-color:#1dae00;font-color:#fff;padding:2px;border-radius:6px;font-weight:bold;">➜ <?php echo wc_get_order_status_name($order->get_status()) ?></div>
+											ORDINE N. <?php echo esc_html( $order_number ); ?> <div style="width:100px;text-align: center;font-size: 0.8em;display: inline-block;margin-left: 3px;background-color:<?php echo esc_attr( $status_badge_bgcolor ); ?>;font-color:#fff;padding:2px;border-radius:6px;font-weight:bold;border: 1px solid #ffffff;">➜ <?php echo wc_get_order_status_name($order->get_status()) ?></div>
 										<?php endif; ?>
 									</td>
 								</tr>
@@ -519,13 +558,21 @@ final class CB_WC_24H_Orders_Email_Report {
 									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo esc_html( $customer_name ); ?><br><?php echo esc_html( $email ); ?></td>
 								</tr>
 								<tr>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">TOT. VALORE</td>
+									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo wp_kses_post( $formatted_total_value ); ?></td>
+								</tr>
+								<tr>
 									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">TOT. PAGATO</td>
 									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo wp_kses_post( $total ) . $invoice_requested ?></td>
 								</tr>
 								<tr>
-									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">CARTA REGALO?</td>
-									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo esc_html( $gift_cards_found ); ?></td>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">CARTE REGALO</td>
+									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo wp_kses_post( $gift_cards_found ); ?></td>
 								</tr>
+								<tr>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">CODICI SCONTO</td>
+									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo wp_kses_post( $coupon_found ); ?></td>
+								</tr>	
 								<tr>
 									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">SPEDIZIONE</td>
 									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo esc_html( $shipping ); ?></td>
