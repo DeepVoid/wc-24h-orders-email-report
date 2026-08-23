@@ -451,7 +451,8 @@ final class CB_WC_24H_Orders_Email_Report {
 		<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;color:#222;">
 			<div style="max-width:100%;margin:0 auto;padding:0px;">
 				<div style="background:#fff;padding:0px;border:0px;">
-					<h2 style="margin:0 0 8px;font-size:14px;text-align: center;">REPORT ORDINI</h2>
+					<h3 style="margin:4px 0 0px;font-size:11px;text-align: center;"><?php echo esc_html( $site_name ); ?></h3>
+					<h2 style="margin:0 0 8px;font-size:13px;text-align: center;">ORDINI RICEVUTI NELLE ULTIME 24 ORE</h2>
 					<p style="margin:0 0 14px;color:#666;text-align: center;">
 						Periodo:<br>dal <?php echo esc_html( $from_text ); ?><br>al <?php echo esc_html( $to_text ); ?>
 						<?php if ( $test ) : ?>
@@ -487,7 +488,7 @@ final class CB_WC_24H_Orders_Email_Report {
 
 							// recupera il valore del campo 'invoice_selected' generato da Checkout Field Editor for WooCommerce by Themehigh nei metadati dell'ordine corrente
 							$invoice_selected = $order->get_meta('invoice_selected', true);
-							$invoice_requested = ! empty($invoice_selected) ? 'Fattura: sì' : 'Fattura: no';
+							$invoice_requested = ! empty($invoice_selected) ? '' : ' <div style="width:70px;text-align: center;font-size: 0.8em;display: inline-block;margin-left: 3px;background-color:#ffb500;font-color:#fff;padding:2px;border-radius:6px;font-weight:bold;">➜ FATTURA</div>';
 
 							// recupera i dati della Carta Regalo Campo Base, se è stata utilizzata per pagare l'ordine - Pimwick PW Gift Card
 							$gift_cards_found = array();
@@ -514,27 +515,27 @@ final class CB_WC_24H_Orders_Email_Report {
 									</td>
 								</tr>
 								<tr>
-									<td style="width:110px;padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;">CLIENTE</td>
-									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo esc_html( $customer_name ); ?><br>(<?php echo esc_html( $email ); ?>)</td>
+									<td style="width:110px;padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">CLIENTE</td>
+									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo esc_html( $customer_name ); ?><br><?php echo esc_html( $email ); ?></td>
 								</tr>
 								<tr>
-									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;">TOT. ORDINE</td>
-									<td style="padding:10px 0px;border-bottom:1px solid #eee;"><?php echo wp_kses_post( $total ) . ' (' . $invoice_requested . ')'; ?></td>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">TOT. PAGATO</td>
+									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo wp_kses_post( $total ) . $invoice_requested ?></td>
 								</tr>
 								<tr>
-									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;">CARTA REGALO?</td>
-									<td style="padding:10px 0px;border-bottom:1px solid #eee;"><?php echo esc_html( $gift_cards_found ); ?></td>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">CARTA REGALO?</td>
+									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo esc_html( $gift_cards_found ); ?></td>
 								</tr>
 								<tr>
-									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;">SPEDIZIONE</td>
-									<td style="padding:10px 0px;border-bottom:1px solid #eee;"><?php echo esc_html( $shipping ); ?></td>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">SPEDIZIONE</td>
+									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo esc_html( $shipping ); ?></td>
 								</tr>
 								<tr>
-									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;">PAGAMENTO</td>
-									<td style="padding:10px 0px;border-bottom:1px solid #eee;"><?php echo esc_html( $payment ); ?></td>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">PAGAMENTO</td>
+									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo esc_html( $payment ); ?></td>
 								</tr>
 								<tr>
-									<td style="padding:10px 10px;vertical-align:top;font-weight:bold;font-size: .95em;">PRODOTTI</td>
+									<td style="padding:10px 10px;vertical-align:top;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">PRODOTTI</td>
 									<td style="padding:10px 5px;"><?php echo self::items_html( $order ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
 								</tr>
 							</table>
