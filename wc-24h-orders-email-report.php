@@ -12,6 +12,10 @@
  * WC requires at least: 8.2
  * WC tested up to: 10.2
  * License: GPLv2 or later
+ * Copyright (C) 2026 Alex Vannini - DeepVoid
+ * 
+ * TODO:
+ * - Verificare che il campo relativo alla fattura venga recuperato correttamente
  */
 
 defined( 'ABSPATH' ) || exit;
