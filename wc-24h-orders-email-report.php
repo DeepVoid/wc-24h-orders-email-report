@@ -483,6 +483,7 @@ final class CB_WC_24H_Orders_Email_Report {
 							$order_subtotal = $order->get_subtotal();
 							$order_total_discount = $order->get_total_discount();
 							$order_tax = $order->get_total_tax();
+							$order_shipping_total = $order->get_shipping_total();
 							$order_total_value = $order_subtotal + $order_shipping_total + $order_tax - $order_total_discount;
 							$formatted_total_value = wc_price( $order_total_value, array( 'currency' => $order->get_currency() ) );
 							
@@ -491,14 +492,16 @@ final class CB_WC_24H_Orders_Email_Report {
 							foreach ( $order_coupons as $coupon ) {
 								$coupon_code = $coupon->get_code();
 							}
-							$coupon_found = ! empty( $coupon_code ) ? '<div style="width:137px;text-align: center;font-size:0.8em;display:inline-block;margin-left:3px;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . esc_html( $coupon_code ) . '</div>' : '<div style="width:137px;text-align: center;font-size:0.8em;display:inline-block;margin-left:3px;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
+							$coupon_found = ! empty( $coupon_code ) ? '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . esc_html( $coupon_code ) . '</div>' : '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
 							
-							$shipping = self::shipping_methods_text( $order );
+							//$shipping = self::shipping_methods_text( $order );
+							$shipping = ! empty( self::shipping_methods_text( $order ) ) ? '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . esc_html( self::shipping_methods_text( $order ) ) . '</div>' : '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NESSUNO</div>';
+
 							$payment = $order->get_payment_method_title();
 							if ( '' === $payment ) {
-								$payment = '<div style="width:137px;text-align: center;font-size:0.8em;display:inline-block;margin-left:3px;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NESSUNO</div>';
+								$payment = '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NESSUNO</div>';
 							} else {
-								$payment = '<div style="width:137px;text-align: center;font-size:0.8em;display:inline-block;margin-left:3px;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . $order->get_payment_method_title() . '</div>';
+								$payment = '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . $order->get_payment_method_title() . '</div>';
 							}
 
 							// recupera lo stato di lavorazione dell'ordine e decide il colore di sfondo del badge da visualizzare nell'email
@@ -541,11 +544,11 @@ final class CB_WC_24H_Orders_Email_Report {
 								}
 							}
 
-							$gift_cards_found = ! empty( $gift_cards_found ) ? '<div style="width:137px;text-align: center;font-size:0.8em;display:inline-block;margin-left:3px;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . esc_html( implode( ', ', array_unique( $gift_cards_found ) ) ) . '</div>' : '<div style="width:137px;text-align: center;font-size:0.8em;display:inline-block;margin-left:3px;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
+							$gift_cards_found = ! empty( $gift_cards_found ) ? '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . esc_html( implode( ', ', array_unique( $gift_cards_found ) ) ) . '</div>' : '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
 							?>
-							<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 24px;border:1px solid #ddd;">
+							<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 24px;border:3px solid #2cc300;;">
 								<tr>
-									<td colspan="2" style="background:#188f00;color:#fff;padding:10px 10px;font-size:14px;font-weight:bold;text-align: center;">
+									<td colspan="2" style="background:#188f00;color:#fff;padding:10px 0px 10px 0px;font-size:14px;font-weight:bold;text-align: center;">
 										<?php if ( 'yes' === $settings['include_order_link'] && current_user_can( 'manage_woocommerce' ) ) : ?>
 											<a href="<?php echo esc_url( $order->get_edit_order_url() ); ?>" style="color:#fff;text-decoration:none;">
 												ORDINE N. <?php echo esc_html( $order_number ); ?> <div style="width:100px;text-align: center;font-size: 0.8em;display: inline-block;margin-left: 3px;background-color:<?php echo esc_attr( $status_badge_bgcolor ); ?>;font-color:#fff;padding:2px;border-radius:6px;font-weight:bold;border: 1px solid #ffffff;">➜ <?php echo wc_get_order_status_name($order->get_status()) ?></div>
@@ -557,31 +560,31 @@ final class CB_WC_24H_Orders_Email_Report {
 								</tr>
 								<tr>
 									<td style="width:110px;padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">CLIENTE</td>
-									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo esc_html( $customer_name ); ?><br><?php echo esc_html( $email ); ?></td>
+									<td style="padding:10px 5px;border-bottom:1px solid #eee;text-align:center;"><b><?php echo esc_html( ucwords( $customer_name ) ); ?></b><br><?php echo esc_html( $email ); ?></td>
 								</tr>
 								<tr>
 									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">TOT. VALORE</td>
-									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo wp_kses_post( $formatted_total_value ); ?></td>
+									<td style="padding:10px 5px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $formatted_total_value ); ?></td>
 								</tr>
 								<tr>
 									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">TOT. PAGATO</td>
-									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo wp_kses_post( $total ) . $invoice_requested ?></td>
+									<td style="padding:10px 5px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $total ) . $invoice_requested ?></td>
 								</tr>
 								<tr>
 									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">CARTE REGALO</td>
-									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo wp_kses_post( $gift_cards_found ); ?></td>
+									<td style="padding:10px 12px 10px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $gift_cards_found ); ?></td>
 								</tr>
 								<tr>
 									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">CODICI SCONTO</td>
-									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo wp_kses_post( $coupon_found ); ?></td>
+									<td style="padding:10px 12px 10px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $coupon_found ); ?></td>
 								</tr>	
 								<tr>
 									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">SPEDIZIONE</td>
-									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo esc_html( $shipping ); ?></td>
+									<td style="padding:10px 12px 10px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $shipping ); ?></td>
 								</tr>
 								<tr>
 									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">PAGAMENTO</td>
-									<td style="padding:10px 5px;border-bottom:1px solid #eee;"><?php echo $payment; ?></td>
+									<td style="padding:10px 12px 10px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo $payment; ?></td>
 								</tr>
 								<tr>
 									<td style="padding:10px 10px;vertical-align:top;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">PRODOTTI</td>
@@ -670,9 +673,12 @@ final class CB_WC_24H_Orders_Email_Report {
 			}
 
 			$html .= '<li style="margin-bottom:6px;">';
-			$html .= '<strong>' . esc_html( $name ) . '</strong><br>';
-			$html .= $variation_text;
-			$html .= '<br>EAN: ' . esc_html( $sku ? $sku : 'N/D' );
+			$html .= '<strong>' . esc_html( $name ) . '</strong>';
+			$html .= '<br>' . wp_kses_post( $variation_text );
+			if ($variation_text) {
+				$html .= '<br>';
+			}
+			$html .= 'EAN: ' . esc_html( $sku ? $sku : 'N/D' );
 			$html .= '<br>Quantità: ' . esc_html( $qty );
 			$html .= '</li>';
 		}
