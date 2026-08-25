@@ -608,7 +608,7 @@ final class CB_WC_24H_Orders_Email_Report {
 
 							// recupera il valore del campo 'invoice_selected' generato da Checkout Field Editor for WooCommerce by Themehigh nei metadati dell'ordine corrente
 							$invoice_selected = $order->get_meta('invoice_selected', true);
-							$invoice_requested = ! empty($invoice_selected) ? ' <div style="width:70px;text-align: center;font-size: 0.8em;display: inline-block;margin-left: 3px;background-color:#ffb500;font-color:#fff;padding:2px;border-radius:6px;font-weight:bold;">➜ FATTURA</div>' : '';
+							$invoice_requested = ! empty($invoice_selected) ? ' <div style="width:80px;text-align: center;font-size: 0.7em;display: inline-block;margin-left: 3px;background-color:#ffb500;font-color:#fff;padding:2px;border-radius:6px;font-weight:bold;">➜ FATTURA</div>' : '';
 
 							// recupera i dati della Carta Regalo Campo Base eventualmente utilizzata per pagare l'ordine - Pimwick PW Gift Card
 							$gift_cards_found = array();
@@ -635,36 +635,36 @@ final class CB_WC_24H_Orders_Email_Report {
 									</td>
 								</tr>
 								<tr>
-									<td style="width:110px;padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">CLIENTE</td>
-									<td style="padding:10px 5px;border-bottom:1px solid #eee;text-align:center;"><b><?php echo esc_html( ucwords( $customer_name ) ); ?></b><br><span style="font-size:0.8em;"><?php echo esc_html( $email ); ?></span></td>
+									<td style="width:80px;padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: right;">CLIENTE</td>
+									<td style="padding:5px 12px 5px 10px;border-bottom:1px solid #eee;text-align:center;"><b><?php echo esc_html( ucwords( $customer_name ) ); ?></b><br><span style="font-size:0.8em;"><?php echo esc_html( $email ); ?></span></td>
 								</tr>
 								<tr>
-									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">TOT. VALORE</td>
-									<td style="padding:10px 5px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $formatted_total_value ); ?></td>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: right;">TOT. VALORE</td>
+									<td style="padding:5px 12px 5px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $formatted_total_value ); ?></td>
 								</tr>
 								<tr>
-									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">TOT. PAGATO</td>
-									<td style="padding:10px 5px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $total ) . $invoice_requested ?></td>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: right;">TOT. PAGATO</td>
+									<td style="padding:5px 12px 5px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $total ) . $invoice_requested ?></td>
 								</tr>
 								<tr>
-									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">CARTE REGALO</td>
-									<td style="padding:10px 12px 10px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $gift_cards_found ); ?></td>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: right;">CARTE REGALO</td>
+									<td style="padding:5px 12px 5px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $gift_cards_found ); ?></td>
 								</tr>
 								<tr>
-									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">CODICI SCONTO</td>
-									<td style="padding:10px 12px 10px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $coupon_found ); ?></td>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: right;">CODICI SCONTO</td>
+									<td style="padding:5px 12px 5px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $coupon_found ); ?></td>
 								</tr>	
 								<tr>
-									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">SPEDIZIONE</td>
-									<td style="padding:10px 12px 10px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $shipping ); ?></td>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: right;">SPEDIZIONE</td>
+									<td style="padding:5px 12px 5px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $shipping ); ?></td>
 								</tr>
 								<tr>
-									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">PAGAMENTO</td>
-									<td style="padding:10px 12px 10px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo $payment; ?></td>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: right;">PAGAMENTO</td>
+									<td style="padding:5px 12px 5px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo $payment; ?></td>
 								</tr>
 								<tr>
-									<td style="padding:10px 10px;vertical-align:top;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">PRODOTTI</td>
-									<td style="padding:10px 5px;"><?php echo self::items_html( $order ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+									<td style="padding:10px 10px;vertical-align:top;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: right;">PRODOTTI</td>
+									<td style="padding:5px 12px 5px 10px;"><?php echo self::items_html( $order ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
 								</tr>
 							</table>
 						<?php endforeach; ?>
@@ -725,15 +725,21 @@ final class CB_WC_24H_Orders_Email_Report {
 		// Elabora solo le righe prodotto, escludendo spedizioni, tasse e fee.
 		foreach ( $order->get_items( 'line_item' ) as $item ) {
 			$product = $item->get_product();
+			$product_id = $item->get_product_id();
 			$name    = $item->get_name();
 			$qty     = $item->get_quantity();
 			$sku     = $product ? $product->get_sku() : '';
 
 			// per ogni prodotto, recupera i tag prodotto associati e verifica se è presente il tag "petzl professionale" per impostare la variabile $is_petzl_professionale a true o false
 			$is_petzl_professionale = false;
-			if ( $product ) {
-				$tags = wp_get_post_terms( $product->get_id(), 'product_tag', array( 'fields' => 'slugs' ) );
-				$is_petzl_professionale = in_array( 'petzl professionale', $tags );
+			$tags = get_the_terms( $product_id, 'product_tag' );
+			if ( is_array( $tags ) ) {
+				foreach ( $tags as $tag ) {
+					if ( $tag->slug === 'petzl-professionale' ) {
+						$is_petzl_professionale = true;
+						break;
+					}
+				}
 			}
 
 			// Per le variazioni, mostra solo il nome del prodotto padre.
@@ -785,7 +791,7 @@ final class CB_WC_24H_Orders_Email_Report {
 
 			// Aggiunge un badge sulla stessa riga della quantità se il prodotto ha il tag "petzl professionale"
 			if ( $is_petzl_professionale ) {
-				$html .= '<div style="width:70px;text-align: center;font-size: 0.8em;display: inline-block;margin-left: 3px;background-color:#ffb500;font-color:#fff;padding:2px;border-radius:6px;font-weight:bold;">➜ PETZL B2B</div>';
+				$html .= '<div style="width:70px;text-align: center;font-size: 0.7em;display: inline-block;margin-left: 10px;background-color:#ffd900;font-color:#fff;padding:2px;border-radius:6px;font-weight:bold;">PETZL B2B</div>';
 			}
 
 			$html .= '</li>';
