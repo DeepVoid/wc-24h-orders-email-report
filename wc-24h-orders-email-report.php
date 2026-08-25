@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/DeepVoid/wc-24h-orders-email-report
  * Text Domain: woocommerce-24h-orders-email-report
  * Description: Invia automaticamente via email il report degli ordini ricevuti nelle ultime 24 ore, con destinatari e orario configurabili.
- * Version: 1.1.9
+ * Version: 1.1.10
  * Author: Alex Vannini - DeepVoid
  * Requires at least: 6.5
  * Requires PHP: 7.4
@@ -25,7 +25,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class CB_WC_24H_Orders_Email_Report {
 
-	const VERSION    = '1.1.9';
+	const VERSION    = '1.1.10';
 	const AS_GROUP   = 'cb-wc-24h-report';
 	const OPTION_KEY = 'cb_wc_24h_report_settings';
 	const CRON_HOOK  = 'cb_wc_24h_report_send';
@@ -636,7 +636,7 @@ final class CB_WC_24H_Orders_Email_Report {
 								</tr>
 								<tr>
 									<td style="width:110px;padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">CLIENTE</td>
-									<td style="padding:10px 5px;border-bottom:1px solid #eee;text-align:center;"><b><?php echo esc_html( ucwords( $customer_name ) ); ?></b><br><?php echo esc_html( $email ); ?></td>
+									<td style="padding:10px 5px;border-bottom:1px solid #eee;text-align:center;"><b><?php echo esc_html( ucwords( $customer_name ) ); ?></b><br><span style="font-size:0.8em;"><?php echo esc_html( $email ); ?></span></td>
 								</tr>
 								<tr>
 									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .95em;background-color: #e1e1e1;text-align: right;">TOT. VALORE</td>
@@ -728,6 +728,14 @@ final class CB_WC_24H_Orders_Email_Report {
 			$name    = $item->get_name();
 			$qty     = $item->get_quantity();
 			$sku     = $product ? $product->get_sku() : '';
+
+			// per ogni prodotto, recupera i tag prodotto associati e verifica se è presente il tag "petzl professionale" per impostare la variabile $is_petzl_professionale a true o false
+			$is_petzl_professionale = false;
+			if ( $product ) {
+				$tags = wp_get_post_terms( $product->get_id(), 'product_tag', array( 'fields' => 'slugs' ) );
+				$is_petzl_professionale = in_array( 'petzl professionale', $tags );
+			}
+
 			// Per le variazioni, mostra solo il nome del prodotto padre.
 			if ( $product && $product->is_type( 'variation' ) ) {
 				$parent_product = wc_get_product( $product->get_parent_id() );
@@ -766,11 +774,20 @@ final class CB_WC_24H_Orders_Email_Report {
 			$html .= '<li style="margin-bottom:6px;">';
 			$html .= '<strong>' . esc_html( $name ) . '</strong>';
 			$html .= '<br>' . wp_kses_post( $variation_text );
+			
+			// Aggiunge una riga vuota tra le informazioni della variazione e l'EAN se il testo della variazione non è vuoto
 			if ($variation_text) {
 				$html .= '<br>';
 			}
+
 			$html .= 'EAN: ' . esc_html( $sku ? $sku : 'N/D' );
 			$html .= '<br>Quantità: ' . esc_html( $qty );
+
+			// Aggiunge un badge sulla stessa riga della quantità se il prodotto ha il tag "petzl professionale"
+			if ( $is_petzl_professionale ) {
+				$html .= '<div style="width:70px;text-align: center;font-size: 0.8em;display: inline-block;margin-left: 3px;background-color:#ffb500;font-color:#fff;padding:2px;border-radius:6px;font-weight:bold;">➜ PETZL B2B</div>';
+			}
+
 			$html .= '</li>';
 		}
 
