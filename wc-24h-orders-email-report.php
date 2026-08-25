@@ -13,6 +13,9 @@
  * WC tested up to: 10.2
  * License: GPLv2 or later
  * Copyright (C) 2026 Alex Vannini - DeepVoid
+ * 
+ * TODO:
+ * - [] Aggiungere il tracciamento dei tag prodotto per evidenziare eventuali prodotti "Petzl Professionale"
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -453,17 +456,17 @@ final class CB_WC_24H_Orders_Email_Report {
 
 		// imposta il subject dell'email
 		$subject = sprintf(
-			'Report ultime 24h – %d ordin%s',
+			'%d ordin%s nelle ultime 24 ore',
 			count( $orders ),
 			1 === count( $orders ) ? 'e' : 'i'
 		);
 
 		$body = self::build_email( $orders, $settings, $from, $now, $test );
 
-		// imposta gli header dell'email di report
+		// imposta gli header dell'email di report - Imposta il character set a UTF-8 per supportare correttamente caratteri speciali e accenti
 		$headers = array(
 			'Content-Type: text/html; charset=UTF-8',
-			'From: Report ordini <noreply@campobase.net>',
+			'From: Report Agent <noreply@campobase.net>',
 		);
 
 		// invia l'email via SMTP tramite la funzione wp_mail() di Wordpress
@@ -534,8 +537,8 @@ final class CB_WC_24H_Orders_Email_Report {
 
 					<?php // Mostra un messaggio esplicito quando l'invio di report vuoti è abilitato. ?>
 					<?php if ( empty( $orders ) ) : ?>
-						<div style="padding:16px;background:#f0f0f0;border:1px solid #ddd;">
-							Nessun ordine ricevuto nelle ultime 24 ore.
+						<div style="padding:16px;background:#f0f0f0;border:2px solid #7b0000; text-align:center; font-weight:bold; color:#7b0000;">
+							Nessun ordine ricevuto nelle ultime 24 ore
 						</div>
 					<?php else : // Genera una scheda HTML separata per ogni ordine trovato. ?>
 						<?php foreach ( $orders as $order ) : ?>
