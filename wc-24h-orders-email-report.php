@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/DeepVoid/wc-24h-orders-email-report
  * Text Domain: woocommerce-24h-orders-email-report
  * Description: Invia automaticamente via email il report degli ordini ricevuti nelle ultime 24 ore, con destinatari e orario configurabili.
- * Version: 1.1.10
+ * Version: 1.1.11
  * Author: Alex Vannini - DeepVoid
  * Requires at least: 6.5
  * Requires PHP: 7.4
@@ -13,9 +13,6 @@
  * WC tested up to: 10.2
  * License: GPLv2 or later
  * Copyright (C) 2026 Alex Vannini - DeepVoid
- * 
- * TODO:
- * - [] Aggiungere il tracciamento dei tag prodotto per evidenziare eventuali prodotti "Petzl Professionale"
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -25,7 +22,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class CB_WC_24H_Orders_Email_Report {
 
-	const VERSION    = '1.1.10';
+	const VERSION    = '1.1.11';
 	const AS_GROUP   = 'cb-wc-24h-report';
 	const OPTION_KEY = 'cb_wc_24h_report_settings';
 	const CRON_HOOK  = 'cb_wc_24h_report_send';
@@ -132,7 +129,7 @@ final class CB_WC_24H_Orders_Email_Report {
 		return $output;
 	}
 
-	/** Aggiunge la pagina del report nel sottomenu di WooCommerce. */
+	/** Aggiunge la pagina del report nel sottomenu di WooCommerce */
 	public static function admin_menu() {
 		add_submenu_page(
 			'woocommerce',
@@ -144,7 +141,7 @@ final class CB_WC_24H_Orders_Email_Report {
 		);
 	}
 
-	/** Visualizza il form delle impostazioni e lo stato della pianificazione. */
+	/** Visualizza il form delle impostazioni e lo stato della pianificazione */
 	public static function settings_page() {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			wp_die( esc_html__( 'Non hai i permessi necessari.', 'cb-wc-24h-report' ) );
@@ -172,14 +169,14 @@ final class CB_WC_24H_Orders_Email_Report {
 						<th scope="row"><label for="cb-recipients">Destinatari email</label></th>
 						<td>
 							<textarea id="cb-recipients" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[recipients]" rows="6" cols="60" class="large-text code"><?php echo esc_textarea( $settings['recipients'] ); ?></textarea>
-							<p class="description">Un indirizzo per riga, oppure indirizzi separati da virgola o punto e virgola.</p>
+							<p class="description">Un indirizzo per riga, oppure indirizzi separati da virgola o punto e virgola</p>
 						</td>
 					</tr>
 					<tr>
 						<th scope="row"><label for="cb-time">Orario invio</label></th>
 						<td>
 							<input id="cb-time" type="time" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[time]" value="<?php echo esc_attr( $settings['time'] ); ?>" />
-							<p class="description">Usa il fuso orario configurato in WordPress.</p>
+							<p class="description">Usa il fuso orario configurato in WordPress</p>
 						</td>
 					</tr>
 					<tr>
@@ -194,7 +191,7 @@ final class CB_WC_24H_Orders_Email_Report {
 									<?php echo esc_html( $status_label ); ?>
 								</label>
 							<?php endforeach; ?>
-							<p class="description">Per impostazione predefinita sono inclusi Pending, Processing, On hold e Completed.</p>
+							<p class="description">Per impostazione predefinita sono inclusi Pending, Processing, On hold e Completed</p>
 						</td>
 					</tr>
 					<tr>
@@ -202,7 +199,7 @@ final class CB_WC_24H_Orders_Email_Report {
 						<td>
 							<label>
 								<input type="checkbox" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[send_empty]" value="yes" <?php checked( $settings['send_empty'], 'yes' ); ?> />
-								Invia comunque una email quando non ci sono ordini nelle ultime 24 ore.
+								Invia comunque una email quando non ci sono ordini nelle ultime 24 ore
 							</label>
 						</td>
 					</tr>
@@ -211,7 +208,7 @@ final class CB_WC_24H_Orders_Email_Report {
 						<td>
 							<label>
 								<input type="checkbox" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[include_order_link]" value="yes" <?php checked( $settings['include_order_link'], 'yes' ); ?> />
-								Rendi cliccabile il numero ordine per gli utenti autorizzati al backoffice.
+								Rendi cliccabile il numero ordine per gli utenti autorizzati al backoffice
 							</label>
 						</td>
 					</tr>
@@ -223,7 +220,7 @@ final class CB_WC_24H_Orders_Email_Report {
 			<hr />
 
 			<h2>Invio manuale</h2>
-			<p>Puoi usare questi pulsanti per verificare il report senza aspettare l'orario programmato.</p>
+			<p>Puoi usare questi pulsanti per verificare il report senza aspettare l'orario programmato</p>
 
 			<p>
 				<a class="button button-secondary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=cb_wc_24h_test_report' ), 'cb_wc_24h_test_report' ) ); ?>">
@@ -239,7 +236,7 @@ final class CB_WC_24H_Orders_Email_Report {
 				<?php if ( $next_run ) : ?>
 					Prossimo invio previsto: <strong><?php echo esc_html( wp_date( 'd/m/Y H:i', $next_run ) ); ?></strong>.
 				<?php else : ?>
-					<strong>Evento non programmato.</strong> Salva nuovamente le impostazioni per riprogrammarlo.
+					<strong>Evento non programmato.</strong> Salva nuovamente le impostazioni per riprogrammarlo
 				<?php endif; ?>
 			</p>
 			<p>
@@ -258,11 +255,11 @@ final class CB_WC_24H_Orders_Email_Report {
 	}
 
 	/**
-	 * Ripianifica l'invio dopo il salvataggio dell'opzione del plugin.
+	 * Ripianifica l'invio dopo il salvataggio dell'opzione del plugin
 	 *
-	 * @param mixed  $old_value Valore dell'opzione prima del salvataggio.
-	 * @param mixed  $value     Nuovo valore dell'opzione.
-	 * @param string $option    Nome dell'opzione aggiornata.
+	 * @param mixed  $old_value Valore dell'opzione prima del salvataggio
+	 * @param mixed  $value     Nuovo valore dell'opzione
+	 * @param string $option    Nome dell'opzione aggiornata
 	 */
 	public static function reschedule_after_settings_update( $old_value, $value, $option ) {
 		if ( self::OPTION_KEY !== $option ) {
@@ -271,14 +268,14 @@ final class CB_WC_24H_Orders_Email_Report {
 		self::schedule_next_run();
 	}
 
-	/** Verifica che siano disponibili tutte le API Action Scheduler necessarie. */
+	/** Verifica che siano disponibili tutte le API Action Scheduler necessarie */
 	private static function action_scheduler_available() {
 		return function_exists( 'as_schedule_cron_action' )
 			&& function_exists( 'as_unschedule_all_actions' )
 			&& function_exists( 'as_next_scheduled_action' );
 	}
 
-	/** Elimina gli eventi Action Scheduler e gli eventuali eventi WP-Cron legacy. */
+	/** Elimina gli eventi Action Scheduler e gli eventuali eventi WP-Cron legacy */
 	private static function unschedule() {
 		if ( self::action_scheduler_available() ) {
 			as_unschedule_all_actions( self::CRON_HOOK, array(), self::AS_GROUP );
@@ -293,8 +290,8 @@ final class CB_WC_24H_Orders_Email_Report {
 	}
 
 	/**
-	 * Calcola il prossimo orario locale e programma l'invio giornaliero.
-	 * Usa Action Scheduler quando disponibile, altrimenti WP-Cron.
+	 * Calcola il prossimo orario locale e programma l'invio giornaliero
+	 * Usa Action Scheduler quando disponibile, altrimenti WP-Cron
 	 */
 	public static function schedule_next_run() {
 		if ( ! class_exists( 'WooCommerce' ) ) {
@@ -337,7 +334,7 @@ final class CB_WC_24H_Orders_Email_Report {
 		}
 	}
 
-	/** Garantisce che esista un'azione pianificata in Action Scheduler. */
+	/** Garantisce che esista un'azione pianificata in Action Scheduler */
 	public static function ensure_action_scheduler_event() {
 		if ( ! self::action_scheduler_available() || ! class_exists( 'WooCommerce' ) ) {
 			return;
@@ -353,9 +350,9 @@ final class CB_WC_24H_Orders_Email_Report {
 	}
 
 	/**
-	 * Recupera il timestamp del prossimo invio pianificato.
+	 * Recupera il timestamp del prossimo invio pianificato
 	 *
-	 * @return int|false Timestamp Unix o false se non esiste alcun evento.
+	 * @return int|false Timestamp Unix o false se non esiste alcun evento
 	 */
 	public static function next_scheduled_timestamp() {
 		if ( self::action_scheduler_available() ) {
@@ -369,12 +366,12 @@ final class CB_WC_24H_Orders_Email_Report {
 		return $next ? (int) $next : false;
 	}
 
-	/** Callback dell'evento pianificato: invia il report ai destinatari configurati. */
+	/** Callback dell'evento pianificato: invia il report ai destinatari configurati */
 	public static function send_scheduled_report() {
 		self::send_report( false );
 	}
 
-	/** Gestisce l'invio di prova al solo indirizzo amministrativo, con verifica nonce. */
+	/** Gestisce l'invio di prova al solo indirizzo amministrativo, con verifica nonce */
 	public static function handle_test_report() {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			wp_die( esc_html__( 'Non hai i permessi necessari.', 'cb-wc-24h-report' ) );
@@ -390,12 +387,12 @@ final class CB_WC_24H_Orders_Email_Report {
 
 		$result = self::send_report( true, array( $test_recipient ) );
 
-		$message = is_wp_error( $result ) ? $result->get_error_message() : 'Report di test inviato.';
+		$message = is_wp_error( $result ) ? $result->get_error_message() : 'Report di test inviato';
 		wp_safe_redirect( add_query_arg( 'cb_report_notice', rawurlencode( $message ), admin_url( 'admin.php?page=cb-wc-24h-report' ) ) );
 		exit;
 	}
 
-	/** Gestisce l'invio manuale immediato, con controllo permessi e nonce. */
+	/** Gestisce l'invio manuale immediato, con controllo permessi e nonce */
 	public static function handle_send_now() {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			wp_die( esc_html__( 'Non hai i permessi necessari.', 'cb-wc-24h-report' ) );
@@ -403,35 +400,35 @@ final class CB_WC_24H_Orders_Email_Report {
 		check_admin_referer( 'cb_wc_24h_send_now' );
 
 		$result = self::send_report( false );
-		$message = is_wp_error( $result ) ? $result->get_error_message() : 'Report inviato ai destinatari configurati.';
+		$message = is_wp_error( $result ) ? $result->get_error_message() : 'Report inviato ai destinatari configurati';
 
 		wp_safe_redirect( add_query_arg( 'cb_report_notice', rawurlencode( $message ), admin_url( 'admin.php?page=cb-wc-24h-report' ) ) );
 		exit;
 	}
 
 	/**
-	 * Cerca gli ordini dell'ultima finestra di 24 ore, compone il messaggio e lo invia.
+	 * Cerca gli ordini dell'ultima finestra di 24 ore, compone il messaggio e lo invia
 	 *
-	 * @param bool  $test                Indica se si tratta di un invio di prova.
-	 * @param array $override_recipients Destinatari da usare esclusivamente in modalità test.
-	 * @return true|WP_Error Esito dell'invio.
+	 * @param bool  $test                Indica se si tratta di un invio di prova
+	 * @param array $override_recipients Destinatari da usare esclusivamente in modalità test
+	 * @return true|WP_Error Esito dell'invio
 	 */
 	private static function send_report( $test = false, $override_recipients = array() ) {
 		if ( ! class_exists( 'WooCommerce' ) ) {
-			return new WP_Error( 'woocommerce_missing', 'WooCommerce non è attivo.' );
+			return new WP_Error( 'woocommerce_missing', 'WooCommerce non è attivo' );
 		}
 
 		$settings = self::settings();
 
 		$recipients = $test ? array_filter( array_map( 'sanitize_email', $override_recipients ) ) : self::recipient_list( $settings['recipients'] );
 		if ( empty( $recipients ) ) {
-			return new WP_Error( 'no_recipients', 'Non sono configurati destinatari validi.' );
+			return new WP_Error( 'no_recipients', 'Non sono configurati destinatari validi' );
 		}
 
-		// Istante corrente in formato timestamp Unix.
+		// Istante corrente in formato timestamp Unix
 		$now = time();
 
-		// Inizio della finestra di rilevamento: 24 ore (86.400 secondi) prima dell'invio.
+		// Inizio della finestra di rilevamento: 24 ore (86.400 secondi) prima dell'invio
 		$from = $now - DAY_IN_SECONDS;
 		$statuses = array_values( array_filter( (array) $settings['statuses'] ) );
 
@@ -439,7 +436,7 @@ final class CB_WC_24H_Orders_Email_Report {
 			'limit'        => -1,
 			'orderby'      => 'date',
 			'order'        => 'ASC',
-			// Recupera soltanto gli ordini creati tra $from e $now, estremi inclusi.
+			// Recupera soltanto gli ordini creati tra $from e $now, estremi inclusi
 			'date_created' => $from . '...' . $now,
 			'return'       => 'objects',
 		);
@@ -480,10 +477,10 @@ final class CB_WC_24H_Orders_Email_Report {
 	}
 
 	/**
-	 * Estrae, sanifica e deduplica gli indirizzi email inseriti dall'amministratore.
+	 * Estrae, sanifica e deduplica gli indirizzi email inseriti dall'amministratore
 	 *
-	 * @param string $raw Elenco separato da spazi, virgole, punti e virgola o nuove righe.
-	 * @return string[] Indirizzi email validi e univoci.
+	 * @param string $raw Elenco separato da spazi, virgole, punti e virgola o nuove righe
+	 * @return string[] Indirizzi email validi e univoci
 	 */
 	private static function recipient_list( $raw ) {
 		$emails = preg_split( '/[\s,;]+/', (string) $raw, -1, PREG_SPLIT_NO_EMPTY );
@@ -500,21 +497,21 @@ final class CB_WC_24H_Orders_Email_Report {
 	}
 
 	/**
-	 * Genera il corpo HTML dell'email con riepilogo e dettaglio degli ordini.
+	 * Genera il corpo HTML dell'email con riepilogo e dettaglio degli ordini
 	 *
-	 * @param WC_Order[] $orders   Ordini da mostrare.
-	 * @param array      $settings Impostazioni del report.
-	 * @param int        $from     Timestamp iniziale dell'intervallo.
-	 * @param int        $now      Timestamp finale dell'intervallo.
-	 * @param bool       $test     Mostra l'etichetta di email di test.
-	 * @return string HTML dell'email.
+	 * @param WC_Order[] $orders   Ordini da mostrare
+	 * @param array      $settings Impostazioni del report
+	 * @param int        $from     Timestamp iniziale dell'intervallo
+	 * @param int        $now      Timestamp finale dell'intervallo
+	 * @param bool       $test     Mostra l'etichetta di email di test
+	 * @return string 	 HTML dell'email
 	 */
 	private static function build_email( $orders, $settings, $from, $now, $test = false ) {
 		$site_name = wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
 		$from_text = wp_date( 'd/m/Y', $from ) . ' ore ' . wp_date( 'H:i', $from );
 		$to_text   = wp_date( 'd/m/Y', $now ) . ' ore ' . wp_date( 'H:i', $now );
 
-		// Il markup viene catturato nel buffer per essere passato come corpo a wp_mail().
+		// Il markup viene catturato nel buffer per essere passato come corpo a wp_mail()
 		ob_start();
 		?>
 		<!doctype html>
@@ -535,12 +532,12 @@ final class CB_WC_24H_Orders_Email_Report {
 						<?php endif; ?>
 					</p>
 
-					<?php // Mostra un messaggio esplicito quando l'invio di report vuoti è abilitato. ?>
+					<?php // Mostra un messaggio esplicito quando l'invio di report vuoti è abilitato ?>
 					<?php if ( empty( $orders ) ) : ?>
 						<div style="padding:16px;background:#f0f0f0;border:2px solid #7b0000; text-align:center; font-weight:bold; color:#7b0000;">
 							Nessun ordine ricevuto nelle ultime 24 ore
 						</div>
-					<?php else : // Genera una scheda HTML separata per ogni ordine trovato. ?>
+					<?php else : // Genera una scheda HTML separata per ogni ordine trovato ?>
 						<?php foreach ( $orders as $order ) : ?>
 							<?php
 							// controllo difensivo all'inizio del ciclo foreach della funzione build_email()
@@ -635,7 +632,7 @@ final class CB_WC_24H_Orders_Email_Report {
 									</td>
 								</tr>
 								<tr>
-									<td style="width:80px;padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: right;">CLIENTE</td>
+									<td style="width:70px;padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: right;">CLIENTE</td>
 									<td style="padding:5px 12px 5px 10px;border-bottom:1px solid #eee;text-align:center;"><b><?php echo esc_html( ucwords( $customer_name ) ); ?></b><br><span style="font-size:0.8em;"><?php echo esc_html( $email ); ?></span></td>
 								</tr>
 								<tr>
