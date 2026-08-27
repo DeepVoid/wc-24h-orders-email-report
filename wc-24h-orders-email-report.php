@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/DeepVoid/wc-24h-orders-email-report
  * Text Domain: woocommerce-24h-orders-email-report
  * Description: Invia automaticamente via email il report degli ordini ricevuti nelle ultime 24 ore, con destinatari e orario configurabili.
- * Version: 1.1.12
+ * Version: 1.1.13
  * Author: Alex Vannini - DeepVoid
  * Requires at least: 6.5
  * Requires PHP: 7.4
@@ -22,7 +22,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class CB_WC_24H_Orders_Email_Report {
 
-	const VERSION    = '1.1.12';
+	const VERSION    = '1.1.13';
 	const AS_GROUP   = 'cb-wc-24h-report';
 	const OPTION_KEY = 'cb_wc_24h_report_settings';
 	const CRON_HOOK  = 'cb_wc_24h_report_send';
@@ -558,7 +558,8 @@ final class CB_WC_24H_Orders_Email_Report {
 							$order_total_discount = $order->get_total_discount();
 							$order_tax = $order->get_total_tax();
 							$order_shipping_total = $order->get_shipping_total();
-							$order_total_value = $order_subtotal + $order_shipping_total + $order_tax - $order_total_discount;
+							//$order_total_value = $order_subtotal + $order_shipping_total + $order_tax - $order_total_discount;
+							$order_total_value = $order_subtotal + $order_shipping_total + $order_tax;
 							$formatted_total_value = wc_price( $order_total_value, array( 'currency' => $order->get_currency() ) );
 							
 							// recupera i codici coupon eventualmente applicati all'ordine corrente
@@ -566,9 +567,8 @@ final class CB_WC_24H_Orders_Email_Report {
 							foreach ( $order_coupons as $coupon ) {
 								$coupon_code = $coupon->get_code();
 							}
-							$coupon_found = ! empty( $coupon_code ) ? '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . esc_html( $coupon_code ) . '</div>' : '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
+							$coupon_found = ! empty( $coupon_code ) ? '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . esc_html( strtoupper( $coupon_code ) ) . ' ➜ €' . $order_total_discount . '</div>' : '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
 							
-							//$shipping = self::shipping_methods_text( $order );
 							$shipping = ! empty( self::shipping_methods_text( $order ) ) ? '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . esc_html( self::shipping_methods_text( $order ) ) . '</div>' : '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NESSUNO</div>';
 
 							// recupera i dettagli del metodo di pagamento utilizzato nell'ordine corrente
@@ -589,7 +589,7 @@ final class CB_WC_24H_Orders_Email_Report {
 							// recupera le note utente associate all'ordine, se presenti
 							$customer_note_sanitized = sanitize_text_field( $order->get_customer_note() );
 							$customer_note_formatted = wpautop( $customer_note_sanitized );
-							$customer_note = ! empty($customer_note_formatted) ? '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . $customer_note_formatted . '</div>' : '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
+							$customer_note = ! empty($customer_note_formatted) ? '<div style="width:100%;text-align: justify;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . $customer_note_formatted . '</div>' : '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
 
 							// recupera lo stato di lavorazione dell'ordine e decide il colore di sfondo del badge da visualizzare nell'email
 							$order_status = wc_get_order_status_name($order->get_status());
@@ -674,7 +674,7 @@ final class CB_WC_24H_Orders_Email_Report {
 									<td style="padding:5px 12px 5px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo $payment_details; ?></td>
 								</tr>
 								<tr>
-									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: justify;">NOTE</td>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: right;">NOTE</td>
 									<td style="padding:5px 12px 5px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $customer_note ); ?></td>
 								</tr>
 								<tr>
