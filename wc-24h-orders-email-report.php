@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/DeepVoid/wc-24h-orders-email-report
  * Text Domain: woocommerce-24h-orders-email-report
  * Description: Invia automaticamente via email il report degli ordini ricevuti nelle ultime 24 ore, con destinatari e orario configurabili.
- * Version: 1.1.11
+ * Version: 1.1.12
  * Author: Alex Vannini - DeepVoid
  * Requires at least: 6.5
  * Requires PHP: 7.4
@@ -18,16 +18,16 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Gestisce impostazioni, pianificazione e invio del report giornaliero WooCommerce.
+ * Gestisce impostazioni, pianificazione e invio del report giornaliero WooCommerce
  */
 final class CB_WC_24H_Orders_Email_Report {
 
-	const VERSION    = '1.1.11';
+	const VERSION    = '1.1.12';
 	const AS_GROUP   = 'cb-wc-24h-report';
 	const OPTION_KEY = 'cb_wc_24h_report_settings';
 	const CRON_HOOK  = 'cb_wc_24h_report_send';
 
-	/** Registra tutti gli hook WordPress usati dal plugin. */
+	/** Registra tutti gli hook WordPress usati dal plugin */
 	public static function init() {
 		add_action( 'admin_menu', array( __CLASS__, 'admin_menu' ) );
 		add_action( 'admin_init', array( __CLASS__, 'register_settings' ) );
@@ -37,7 +37,7 @@ final class CB_WC_24H_Orders_Email_Report {
 		add_action( 'update_option_' . self::OPTION_KEY, array( __CLASS__, 'reschedule_after_settings_update' ), 10, 3 );
 	}
 
-	/** Pianifica il primo invio quando il plugin viene attivato. */
+	/** Pianifica il primo invio quando il plugin viene attivato */
 	public static function activate() {
 		if ( ! class_exists( 'WooCommerce' ) ) {
 			return;
@@ -45,13 +45,13 @@ final class CB_WC_24H_Orders_Email_Report {
 		self::schedule_next_run();
 	}
 
-	/** Rimuove tutte le pianificazioni quando il plugin viene disattivato. */
+	/** Rimuove tutte le pianificazioni quando il plugin viene disattivato */
 	public static function deactivate() {
 		self::unschedule();
 	}
 
 	/**
-	 * Restituisce i valori iniziali della configurazione del plugin.
+	 * Restituisce i valori iniziali della configurazione del plugin
 	 *
 	 * @return array Impostazioni predefinite.
 	 */
@@ -68,16 +68,16 @@ final class CB_WC_24H_Orders_Email_Report {
 	}
 
 	/**
-	 * Legge le impostazioni salvate e completa eventuali valori mancanti.
+	 * Legge le impostazioni salvate e completa eventuali valori mancanti
 	 *
-	 * @return array Impostazioni effettive del report.
+	 * @return array Impostazioni effettive del report
 	 */
 	public static function settings() {
 		$saved = get_option( self::OPTION_KEY, array() );
 		return wp_parse_args( is_array( $saved ) ? $saved : array(), self::defaults() );
 	}
 
-	/** Registra l'opzione del plugin e la relativa callback di sanitizzazione. */
+	/** Registra l'opzione del plugin e la relativa callback di sanitizzazione */
 	public static function register_settings() {
 		register_setting(
 			'cb_wc_24h_report',
@@ -91,10 +91,10 @@ final class CB_WC_24H_Orders_Email_Report {
 	}
 
 	/**
-	 * Convalida e normalizza i dati inviati dalla pagina impostazioni.
+	 * Convalida e normalizza i dati inviati dalla pagina impostazioni
 	 *
-	 * @param array $input Valori inviati dal form amministrativo.
-	 * @return array Valori sicuri da memorizzare.
+	 * @param array $input Valori inviati dal form amministrativo
+	 * @return array Valori sicuri da memorizzare
 	 */
 	public static function sanitize_settings( $input ) {
 		$defaults = self::defaults();
@@ -534,7 +534,7 @@ final class CB_WC_24H_Orders_Email_Report {
 
 					<?php // Mostra un messaggio esplicito quando l'invio di report vuoti è abilitato ?>
 					<?php if ( empty( $orders ) ) : ?>
-						<div style="padding:16px;background:#f0f0f0;border:2px solid #7b0000; text-align:center; font-weight:bold; color:#7b0000;">
+						<div style="padding:16px;background:#f0f0f0;border:2px solid #7b0000; text-align:center; font-weight:bold; color:#7b0000;border-radius:6px;">
 							Nessun ordine ricevuto nelle ultime 24 ore
 						</div>
 					<?php else : // Genera una scheda HTML separata per ogni ordine trovato ?>
@@ -552,6 +552,7 @@ final class CB_WC_24H_Orders_Email_Report {
 								$customer_name = 'Cliente ospite';
 							}
 							$email = $order->get_billing_email();
+							$telefono = $order->get_billing_phone();
 							$total = $order->get_formatted_order_total();
 							$order_subtotal = $order->get_subtotal();
 							$order_total_discount = $order->get_total_discount();
@@ -570,12 +571,25 @@ final class CB_WC_24H_Orders_Email_Report {
 							//$shipping = self::shipping_methods_text( $order );
 							$shipping = ! empty( self::shipping_methods_text( $order ) ) ? '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . esc_html( self::shipping_methods_text( $order ) ) . '</div>' : '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NESSUNO</div>';
 
-							$payment = $order->get_payment_method_title();
-							if ( '' === $payment ) {
-								$payment = '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NESSUNO</div>';
+							// recupera i dettagli del metodo di pagamento utilizzato nell'ordine corrente
+							$payment_method_title = $order->get_payment_method_title();
+							if ( '' === $payment_method_title ) {
+								$payment_details = '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NESSUNO</div>';
 							} else {
-								$payment = '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . $order->get_payment_method_title() . '</div>';
+								$payment_id = $order->get_transaction_id();
+								//$payment_id = $order->get_meta('_transaction_id');
+								if (!'' === $payment_id) {
+									$payment_full_data = $payment_method_title . '<br>' . $payment_id;
+								} else {
+									$payment_full_data = $payment_method_title;
+								}
+								$payment_details = '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . $payment_full_data . '</div>';
 							}
+
+							// recupera le note utente associate all'ordine, se presenti
+							$customer_note_sanitized = sanitize_text_field( $order->get_customer_note() );
+							$customer_note_formatted = wpautop( $customer_note_sanitized );
+							$customer_note = ! empty($customer_note_formatted) ? '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . $customer_note_formatted . '</div>' : '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
 
 							// recupera lo stato di lavorazione dell'ordine e decide il colore di sfondo del badge da visualizzare nell'email
 							$order_status = wc_get_order_status_name($order->get_status());
@@ -633,7 +647,7 @@ final class CB_WC_24H_Orders_Email_Report {
 								</tr>
 								<tr>
 									<td style="width:70px;padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: right;">CLIENTE</td>
-									<td style="padding:5px 12px 5px 10px;border-bottom:1px solid #eee;text-align:center;"><b><?php echo esc_html( ucwords( $customer_name ) ); ?></b><br><span style="font-size:0.8em;"><?php echo esc_html( $email ); ?></span></td>
+									<td style="padding:5px 12px 5px 10px;border-bottom:1px solid #eee;text-align:center;"><b><?php echo esc_html( ucwords( $customer_name ) ); ?></b><br><span style="font-size:0.8em;"><?php echo esc_html( $email ); ?></span><br><span style="font-size:0.8em;"><?php echo esc_html( $telefono ); ?></span></td>
 								</tr>
 								<tr>
 									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: right;">TOT. VALORE</td>
@@ -657,7 +671,11 @@ final class CB_WC_24H_Orders_Email_Report {
 								</tr>
 								<tr>
 									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: right;">PAGAMENTO</td>
-									<td style="padding:5px 12px 5px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo $payment; ?></td>
+									<td style="padding:5px 12px 5px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo $payment_details; ?></td>
+								</tr>
+								<tr>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: justify;">NOTE</td>
+									<td style="padding:5px 12px 5px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $customer_note ); ?></td>
 								</tr>
 								<tr>
 									<td style="padding:10px 10px;vertical-align:top;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: right;">PRODOTTI</td>
@@ -667,7 +685,7 @@ final class CB_WC_24H_Orders_Email_Report {
 						<?php endforeach; ?>
 					<?php endif; ?>
 				<div style="margin-top:10px;padding:10px;border-radius: 8px;font-size: .95em;background-color:#ccc;text-align: center;">
-					Report riservato inviato da<br>
+					Questo report riservato è inviato da<br>
 					<b>WooCommerce 24h Orders Email Report</b> <?php echo self::VERSION ?><br>
 					di <b>Alex Vannini</b> - <b>DeepVoid</b> ➜ <a href="https://github.com/DeepVoid/wc-24h-orders-email-report">[GitHub]</a><br>
 					<a href="<?php echo wp_specialchars_decode( get_bloginfo( 'url' ), ENT_QUOTES ) ?>" style="text-decoration:none; font-weight:bold;"><?php echo $site_name ?></a>
@@ -677,12 +695,12 @@ final class CB_WC_24H_Orders_Email_Report {
 		</html>
 		<?php
 
-		// Restituisce il markup acquisito e chiude il buffer di output.
+		// Restituisce il markup acquisito e chiude il buffer di output
 		return ob_get_clean();
 	}
 
 	/**
-	 * Ricava le etichette univoche dei metodi di spedizione di un ordine.
+	 * Ricava le etichette univoche dei metodi di spedizione di un ordine
 	 *
 	 * @param WC_Order $order Ordine da analizzare.
 	 * @return string Metodi separati da virgola o messaggio di assenza spedizione.
@@ -711,15 +729,15 @@ final class CB_WC_24H_Orders_Email_Report {
 	}
 
 	/**
-	 * Costruisce la lista HTML di prodotti, quantità, SKU e attributi delle variazioni.
+	 * Costruisce la lista HTML di prodotti, quantità, SKU e attributi delle variazioni
 	 *
-	 * @param WC_Order $order Ordine da cui estrarre le righe prodotto.
-	 * @return string Lista HTML pronta per il template dell'email.
+	 * @param WC_Order $order Ordine da cui estrarre le righe prodotto
+	 * @return string Lista HTML pronta per il template dell'email
 	 */
 	private static function items_html( $order ) {
 		$html = '<ul style="margin:0;padding-left:18px;">';
 
-		// Elabora solo le righe prodotto, escludendo spedizioni, tasse e fee.
+		// Elabora solo le righe prodotto, escludendo spedizioni, tasse e fee
 		foreach ( $order->get_items( 'line_item' ) as $item ) {
 			$product = $item->get_product();
 			$product_id = $item->get_product_id();
@@ -739,7 +757,7 @@ final class CB_WC_24H_Orders_Email_Report {
 				}
 			}
 
-			// Per le variazioni, mostra solo il nome del prodotto padre.
+			// Per le variazioni, mostra solo il nome del prodotto padre
 			if ( $product && $product->is_type( 'variation' ) ) {
 				$parent_product = wc_get_product( $product->get_parent_id() );
 				if ( $parent_product ) {
@@ -747,7 +765,7 @@ final class CB_WC_24H_Orders_Email_Report {
 				}
 			}
 
-			// Traduce gli attributi tecnici della variazione in etichette leggibili.
+			// Traduce gli attributi tecnici della variazione in etichette leggibili
 			$variation_text = '';
 			if ( $product && $product->is_type( 'variation' ) ) {
 				$attributes = $product->get_variation_attributes();
@@ -800,10 +818,10 @@ final class CB_WC_24H_Orders_Email_Report {
 	}
 }
 
-// Registra gli hook del plugin durante il caricamento di questo file.
+// Registra gli hook del plugin durante il caricamento di questo file
 CB_WC_24H_Orders_Email_Report::init();
 
-// Collega attivazione e disattivazione alla gestione delle pianificazioni.
+// Collega attivazione e disattivazione alla gestione delle pianificazioni
 register_activation_hook( __FILE__, array( 'CB_WC_24H_Orders_Email_Report', 'activate' ) );
 register_deactivation_hook( __FILE__, array( 'CB_WC_24H_Orders_Email_Report', 'deactivate' ) );
 
@@ -813,11 +831,11 @@ register_deactivation_hook( __FILE__, array( 'CB_WC_24H_Orders_Email_Report', 'd
 
 /**
  * L'updater è opzionale: se la libreria non è presente o non espone
- * PucFactory, il plugin continua a funzionare senza causare un fatal error.
+ * PucFactory, il plugin continua a funzionare senza causare un fatal error
  */
 /**
- * Inizializza il controllo aggiornamenti dal repository GitHub, se la libreria è presente.
- * Gli errori vengono contenuti per non impedire il caricamento del plugin.
+ * Inizializza il controllo aggiornamenti dal repository GitHub, se la libreria è presente
+ * Gli errori vengono contenuti per non impedire il caricamento del plugin
  */
 function wc_export_inizializza_aggiornatore_github() {
     $puc_file = plugin_dir_path( __FILE__ ) . 'plugin-update-checker/plugin-update-checker.php';
@@ -835,7 +853,7 @@ function wc_export_inizializza_aggiornatore_github() {
     }
 
     try {
-			// Crea l'updater usando la factory della libreria opzionale.
+			// Crea l'updater usando la factory della libreria opzionale
 			$my_update_checker = call_user_func(
             array( $factory_class, 'buildUpdateChecker' ),
             'https://github.com/DeepVoid/wc-24h-orders-email-report',
@@ -844,7 +862,7 @@ function wc_export_inizializza_aggiornatore_github() {
         );
 
 			if ( is_object( $my_update_checker ) ) {
-				// Abilita gli asset ZIP delle release e forza il ramo principale, se supportato.
+				// Abilita gli asset ZIP delle release e forza il ramo principale, se supportato
             if ( method_exists( $my_update_checker, 'getVcsApi' ) ) {
                 $vcs_api = $my_update_checker->getVcsApi();
 
@@ -867,5 +885,5 @@ function wc_export_inizializza_aggiornatore_github() {
     }
 }
 
-// Carica l'updater dopo che plugin e librerie dipendenti sono disponibili.
+// Carica l'updater dopo che plugin e librerie dipendenti sono disponibili
 add_action( 'plugins_loaded', 'wc_export_inizializza_aggiornatore_github', 20 );
