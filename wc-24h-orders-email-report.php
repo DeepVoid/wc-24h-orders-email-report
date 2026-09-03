@@ -570,11 +570,12 @@ final class CB_WC_24H_Orders_Email_Report {
 							}
 							$coupon_found = ! empty( $coupon_code ) ? '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . esc_html( strtoupper( $coupon_code ) ) . ' ➜ €' . $order_total_discount . '</div>' : '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
 
-							// recupera i punti cashback eventualmente applicati all'ordine corrente e decide il colore di sfondo del badge da visualizzare nell'email
+							// recupera i punti cashback eventualmente applicati all'ordine corrente e il loro valore effettivo, e decide il colore di sfondo del badge da visualizzare nell'email
 							$cashback_points = '';
 							$cashback_value = '';
 							$cashback_points = $order->get_meta('woocommerce_reward_points_points_redeemed', true);
-							$cashback_value = $order->get_meta('_woocommerce_reward_points_used_value', true);
+							//$cashback_value = $order->get_meta('_woocommerce_reward_points_used_value', true);
+							$cashback_value = $order_total_value - $order->get_total();
 							$cashback_badge = ! empty( $cashback_points ) ? '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . $cashback_points . ' punti ➜ €' . $cashback_value . '</div>' : '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
 							
 							// recupera il metodo di spedizione utilizzato nell'ordine corrente e decide il colore di sfondo del badge da visualizzare nell'email
