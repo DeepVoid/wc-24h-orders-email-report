@@ -558,17 +558,26 @@ final class CB_WC_24H_Orders_Email_Report {
 							$order_total_discount = $order->get_total_discount();
 							$order_tax = $order->get_total_tax();
 							$order_shipping_total = $order->get_shipping_total();
-							//$order_total_value = $order_subtotal + $order_shipping_total + $order_tax - $order_total_discount;
 							$order_total_value = $order_subtotal + $order_shipping_total + $order_tax;
 							$formatted_total_value = wc_price( $order_total_value, array( 'currency' => $order->get_currency() ) );
 							
-							// recupera i codici coupon eventualmente applicati all'ordine corrente
+							// recupera i codici coupon e i punti cashback eventualmente applicati all'ordine corrente
 							$order_coupons = $order->get_coupons();
+							$coupon_code = '';
+
 							foreach ( $order_coupons as $coupon ) {
 								$coupon_code = $coupon->get_code();
 							}
 							$coupon_found = ! empty( $coupon_code ) ? '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . esc_html( strtoupper( $coupon_code ) ) . ' ➜ €' . $order_total_discount . '</div>' : '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
+
+							// recupera i punti cashback eventualmente applicati all'ordine corrente e decide il colore di sfondo del badge da visualizzare nell'email
+							$cashback_points = '';
+							$cashback_value = '';
+							$cashback_points = $order->get_meta('woocommerce_reward_points_points_redeemed', true);
+							$cashback_value = $order->get_meta('_woocommerce_reward_points_used_value', true);
+							$cashback_badge = ! empty( $cashback_points ) ? '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . $cashback_points . ' punti ➜ €' . $cashback_value . '</div>' : '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
 							
+							// recupera il metodo di spedizione utilizzato nell'ordine corrente e decide il colore di sfondo del badge da visualizzare nell'email
 							$shipping = ! empty( self::shipping_methods_text( $order ) ) ? '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . esc_html( self::shipping_methods_text( $order ) ) . '</div>' : '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NESSUNO</div>';
 
 							// recupera i dettagli del metodo di pagamento utilizzato nell'ordine corrente
@@ -664,6 +673,10 @@ final class CB_WC_24H_Orders_Email_Report {
 								<tr>
 									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: right;">CODICI SCONTO</td>
 									<td style="padding:5px 12px 5px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $coupon_found ); ?></td>
+								</tr>
+								<tr>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: right;">CASHBACK</td>
+									<td style="padding:5px 12px 5px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $cashback_badge ); ?></td>
 								</tr>	
 								<tr>
 									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: right;">SPEDIZIONE</td>
