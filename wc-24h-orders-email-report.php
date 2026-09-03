@@ -521,7 +521,7 @@ final class CB_WC_24H_Orders_Email_Report {
 			<meta charset="UTF-8">
 			<title><?php echo esc_html( $site_name ); ?> – Report ordini</title>
 		</head>
-		<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;color:#222;">
+		<body style="margin:0;padding:0;font-family:Encode Sans,Arial,Helvetica,sans-serif;color:#222;">
 			<div style="max-width:100%;margin:0 auto;padding:0px;">
 				<div style="background:#fff;padding:0px;border:0px;">
 					<h3 style="margin:4px 0 0px;font-size:11px;text-align: center;"><?php echo esc_html( $site_name ); ?></h3>
@@ -701,8 +701,8 @@ final class CB_WC_24H_Orders_Email_Report {
 					<?php endif; ?>
 				<div style="margin-top:10px;padding:10px;border-radius: 8px;font-size: .95em;background-color:#ccc;text-align: center;">
 					Questo report riservato è inviato da<br>
-					<b>WooCommerce 24h Orders Email Report</b> <?php echo self::VERSION ?><br>
-					di <b>Alex Vannini</b> - <b>DeepVoid</b> ➜ <a href="https://github.com/DeepVoid/wc-24h-orders-email-report">[GitHub]</a><br>
+					<b>WooCommerce 24h Orders Email Report <?php echo self::VERSION ?></b><br>
+					di <b>Alex Vannini</b> - <b>DeepVoid</b> ➜ <a href="https://github.com/DeepVoid/wc-24h-orders-email-report">[<b>GitHub</b>]</a><br>
 					<a href="<?php echo wp_specialchars_decode( get_bloginfo( 'url' ), ENT_QUOTES ) ?>" style="text-decoration:none; font-weight:bold;"><?php echo $site_name ?></a>
 				</div>
 			</div>
