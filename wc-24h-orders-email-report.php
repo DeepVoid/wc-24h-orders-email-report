@@ -464,10 +464,11 @@ final class CB_WC_24H_Orders_Email_Report {
 		$headers = array(
 			'Content-Type: text/html; charset=UTF-8',
 			'From: Report Agent <noreply@campobase.net>',
+			'BCC: ' . implode( ',', $recipients ),
 		);
 
 		// invia l'email via SMTP tramite la funzione wp_mail() di Wordpress
-		$sent = wp_mail( $recipients, $subject, $body, $headers );
+		$sent = wp_mail( $test_recipient, $subject, $body, $headers );
 
 		if ( ! $sent ) {
 			return new \WP_Error( 'mail_failed', 'WordPress non ha potuto inviare la email. Controlla la configurazione SMTP del sito.' );
@@ -524,9 +525,9 @@ final class CB_WC_24H_Orders_Email_Report {
 			<div style="max-width:100%;margin:0 auto;padding:0px;">
 				<div style="background:#fff;padding:0px;border:0px;">
 					<h3 style="margin:4px 0 0px;font-size:11px;text-align: center;"><?php echo esc_html( $site_name ); ?></h3>
-					<h2 style="margin:0 0 8px;font-size:13px;text-align: center;">ORDINI RICEVUTI NELLE ULTIME 24 ORE</h2>
+					<h2 style="margin:0 0 8px;font-size:13px;text-align: center;">REPORT NUOVI ORDINI</h2>
 					<p style="margin:0 0 14px;color:#666;text-align: center;">
-						Periodo:<br>dal <?php echo esc_html( $from_text ); ?><br>al <?php echo esc_html( $to_text ); ?>
+						Ordini ricevuti nel periodo:<br>dal <?php echo esc_html( $from_text ); ?><br>al <?php echo esc_html( $to_text ); ?>
 						<?php if ( $test ) : ?>
 							<br><strong>EMAIL DI TEST</strong>
 						<?php endif; ?>
@@ -579,7 +580,7 @@ final class CB_WC_24H_Orders_Email_Report {
 							$cashback_badge = ! empty( $cashback_points ) ? '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . $cashback_points . ' punti ➜ €' . $cashback_value . '</div>' : '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
 							
 							// recupera il metodo di spedizione utilizzato nell'ordine corrente e decide il colore di sfondo del badge da visualizzare nell'email
-							$shipping = ! empty( self::shipping_methods_text( $order ) ) ? '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . esc_html( self::shipping_methods_text( $order ) ) . '</div>' : '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NESSUNO</div>';
+							$shipping = ! empty( self::shipping_methods_text( $order ) ) ? '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . esc_html( self::shipping_methods_text( $order ) ) . '</div>' : '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NESSUNA SPEDIZIONE</div>';
 
 							// recupera i dettagli del metodo di pagamento utilizzato nell'ordine corrente
 							$payment_method_title = $order->get_payment_method_title();
@@ -599,7 +600,7 @@ final class CB_WC_24H_Orders_Email_Report {
 							// recupera le note utente associate all'ordine, se presenti
 							$customer_note_sanitized = sanitize_text_field( $order->get_customer_note() );
 							$customer_note_formatted = wpautop( $customer_note_sanitized );
-							$customer_note = ! empty($customer_note_formatted) ? '<div style="width:100%;text-align: justify;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . $customer_note_formatted . '</div>' : '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NO</div>';
+							$customer_note = ! empty($customer_note_formatted) ? '<div style="width:100%;text-align: justify;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#00cdff;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">' . $customer_note_formatted . '</div>' : '<div style="width:100%;text-align: center;font-size:0.8em;display:inline-block;vertical-align: middle;background-color:#cccccc;color:#fff;padding:2px;border-radius:6px;font-weight:bold;">NESSUNA NOTA</div>';
 
 							// recupera lo stato di lavorazione dell'ordine e decide il colore di sfondo del badge da visualizzare nell'email
 							$order_status = wc_get_order_status_name($order->get_status());
@@ -668,7 +669,7 @@ final class CB_WC_24H_Orders_Email_Report {
 									<td style="padding:5px 12px 5px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $total ) . $invoice_requested ?></td>
 								</tr>
 								<tr>
-									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: right;">CARTE REGALO</td>
+									<td style="padding:0px 10px;border-bottom:1px solid #eee;font-weight:bold;font-size: .8em;background-color: #e1e1e1;text-align: right;">CARTA REGALO</td>
 									<td style="padding:5px 12px 5px 10px;border-bottom:1px solid #eee;text-align:center;"><?php echo wp_kses_post( $gift_cards_found ); ?></td>
 								</tr>
 								<tr>
@@ -736,7 +737,7 @@ final class CB_WC_24H_Orders_Email_Report {
 		}
 
 		if ( empty( $methods ) ) {
-			return 'Nessuna spedizione';
+			//return 'Nessuna spedizione';
 		}
 
 		return implode( ', ', array_unique( $methods ) );
